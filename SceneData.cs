@@ -1,0 +1,716 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Web.Script.Serialization;
+using System.IO;
+using System.IO.Ports;
+using System.Windows.Forms;
+using System.Threading;
+
+namespace Metec.MVBDClient
+{
+    static class PARAMS
+    {
+        public const double MAX_SCALE = 50;
+        public const double MIN_SCALE = 0.1;
+        public const double SCALE_STEP = 1.2;
+        public const double MOVE_STEP = 3;  // in pins
+        public const double ROT_STEP = 10;
+    }
+
+    public class SceneInst
+    {
+        // {0=Normal instance, 1=Large instance, 2=Wall, 3=Door}
+        public bool isValid;
+        public int type;
+        public int semantic_label;     // ScanNet labels
+        public int id;
+        public double cx, cy; // center
+        public double x0, y0, x1, y1;  // boundingbox parameters: up left corner  and up right corner; if type == 2 , represents two end points 
+        
+        public SceneInst()
+        {
+            isValid = false;
+            type = 0;
+            semantic_label = 0;
+            id = -1;
+            cx = 0;
+            cy = 0;
+            x0 = 0;
+            y0 = 0;
+            x1 = 0;
+            y1 = 0;
+        }
+    }
+
+    public class Semantics
+    {
+        public static string[] labels = {
+            "wall",
+            "floor",
+            "cabinet",
+            "bed",
+            "chair",
+            "sofa",
+            "table",
+            "door",
+            "window",
+            "bookshelf",
+            "picture",
+            "counter",
+            "desk",
+            "curtain",
+            "refrigerator",
+            "shower curtain",
+            "toilet",
+            "sink",
+            "bathtub",
+            "otherfurniture"
+        };
+
+        public static string[] labels_chinese = {
+            "墙壁",
+            "地面",
+            "立柜",
+            "床",
+            "椅子",
+            "沙发",
+            "餐桌",
+            "门",
+            "窗户",
+            "书架",
+            "装饰画",
+            "柜台",
+            "办公桌",
+            "窗帘",
+            "空调",
+            "浴帘",
+            "马桶",
+            "水池",
+            "浴缸",
+            "其他"
+        };
+    }
+    public class Renderer
+    {
+        /// <summary>
+        /// apply 2D transformation to the input point (x0, y0)
+        /// first translate to the view center (cx, cy),
+        /// then apply scale and rotation.
+        /// </summary>
+        /// <param name="x0">input x coord</param>
+        /// <param name="y0">input y coord</param>
+        /// <param name="cx">view center x coord</param>
+        /// <param name="cy">view center y coord</param>
+        /// <param name="scale"></param>
+        /// <param name="rot"></param>
+        public static double[] clipspace_trans_2D(double x0, double y0, double cx, double cy, double scale, double rot)
+        {
+            // translate
+            double x1 = x0 - cx;
+            double y1 = y0 - cy;
+            // scale
+            x1 *= scale;
+            y1 *= scale;
+            // rotation: https://en.wikipedia.org/wiki/Rotation_matrix
+            return new double[] { x1 * Math.Cos(rot / 180 * Math.PI) - y1 * Math.Sin(rot / 180 * Math.PI),
+                                  x1 * Math.Sin(rot / 180 * Math.PI) + y1 * Math.Cos(rot / 180 * Math.PI) };
+        }
+
+        public static double[] get_display_space_coords(int width, int height, double[] pos)
+        {
+            return new double[] { pos[0] + width / 2, height / 2 - pos[1]};
+        }
+
+        public static void setPin(int[,] array, int width, int height, int x, int y, int val)
+        {
+            if (x >= 0 && x < width && y >= 0 && y < height)
+                array[x, y] = val;
+        }
+
+        public static void render_circle(int[,] array, int width, int height, int size, double[] pos, int val)
+        {
+            if (size % 2 != 1)
+            {
+                Console.WriteLine("Exception: " + "size should be odd number");
+                return;
+            }
+            // convert from clipspace to display space
+            double[] coord = get_display_space_coords(width, height, pos);
+
+            int x0 = (int)Math.Round(coord[0]);
+            int y0 = (int)Math.Round(coord[1]);
+
+            int r = size / 2;
+
+            // if outside of visible area
+            if (x0 + r < 0 || x0 - r >= width || y0 + r < 0 || y0 - r >= height)
+            {
+                return;
+            }
+
+            for (int i = -r; i <= r; i++ )
+            {
+                for (int j = -r; j <= r; j++)
+                {
+                    if (i * i + j * j <= r * r)
+                    {
+                        setPin(array, width, height, x0 + j, y0 + i, val);
+                    }
+                }
+            }
+        }
+
+        public static void render_line(int[,] array, int width, int height, double[] pos0, double[] pos1, int val)
+        {
+            // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+            double[] pos0_disp = get_display_space_coords(width, height, pos0);
+            double[] pos1_disp = get_display_space_coords(width, height, pos1);
+
+            int x0 = (int)Math.Round(pos0_disp[0]);
+            int xEnd = (int)Math.Round(pos1_disp[0]);
+            int y0 = (int)Math.Round(pos0_disp[1]);
+            int yEnd = (int)Math.Round(pos1_disp[1]);
+
+            double slope = (pos1_disp[1] - pos0_disp[1]) / (pos1_disp[0] - pos0_disp[0]);
+            int dx = Math.Abs(xEnd - x0), dy = Math.Abs(yEnd - y0);
+
+            //for a normal line
+            if (dx != 0 && dy != 0)
+            {
+                //for line with |slope| < 1
+                if (Math.Abs(slope) < 1)
+                {
+                    int p = 2 * dy - dx;
+                    int twoDy = 2 * dy, twoDyMinusDx = 2 * (dy - dx);
+                    int x, y;
+
+                    // Determine which endpoint to use as start position 
+                    if (pos0_disp[0] > pos1_disp[0])
+                    {
+                        x = xEnd;
+                        y = yEnd;
+                        xEnd = x0;
+                    }
+                    else
+                    {
+                        x = x0;
+                        y = y0;
+                    }
+                    setPin(array, width, height, x, y, val);
+
+                    while (x < xEnd)
+                    {
+                        x++;
+                        if (p < 0)
+                            p += twoDy;
+                        else
+                        {
+                            //decrement y if slope is negative
+                            if (slope < 0)
+                                y--;
+                            //increment if slope is positive
+                            else
+                                y++;
+                            p += twoDyMinusDx;
+                        }
+                        setPin(array, width, height, x, y, val);
+                    }
+                }
+                //for line with |slope| > 1: switch x and y
+                else
+                {
+                    int p = 2 * dx - dy;
+                    int twoDx = 2 * dx, twoDxMinusDy = 2 * (dx - dy);
+                    int x, y;
+
+                    // Determine which endpoint to use as start position 
+                    if (pos0_disp[1] > pos1_disp[1])
+                    {
+                        y = yEnd;
+                        x = xEnd;
+                        yEnd = y0;
+                    }
+                    else
+                    {
+                        y = y0;
+                        x = x0;
+                    }
+                    setPin(array, width, height, x, y, val);
+
+                    while (y < yEnd)
+                    {
+                        y++;
+                        if (p < 0)
+                            p += twoDx;
+                        else
+                        {
+                            //decrement x if slope is negative
+                            if (slope < 0)
+                                x--;
+                            //increment x if slope is positive
+                            else
+                                x++;
+                            p += twoDxMinusDy;
+                        }
+                        setPin(array, width, height, x, y, val);
+                    }
+                }
+            }
+
+            //horizontal line
+            else if (dy == 0)
+            {
+                int x, y;
+                y = (int)Math.Round(pos0_disp[1]);//rd(start.getY());
+                // Determine which endpoint to use as start position 
+                if (pos0_disp[0] > pos1_disp[0])
+                {
+                    x = xEnd;
+                    xEnd = x0;
+                }
+                else
+                {
+                    x = x0;
+                }
+                for (int i = x; i <= xEnd; i++)
+                    setPin(array, width, height, i, y, val);
+            }
+            //vertical line
+            else if (dx == 0)
+            {
+                int x, y;
+                x = (int)Math.Round(pos0_disp[0]);//rd(pos0[0]);
+                // Determine which endpoint to use as start position 
+                if (pos0_disp[1] > pos1_disp[1])
+                {
+                    y = yEnd;
+                    yEnd = y0;
+                }
+                else
+                {
+                    y = y0;
+                }
+                for (int i = y; i <= yEnd; i++)
+                    setPin(array, width, height, x, i, val);
+            }
+
+        }
+
+        static void swap(ref int a, ref int b) { int tmp = a; a = b; b = tmp; }
+        static void swap(ref float a, ref float b) { float tmp = a; a = b; b = tmp; }
+        // render 
+        static void _fill_left_triangle(int[,] array, int width, int height, int x1, int y1, int x2, int y2, int x3, int y3, int val)
+        {
+            float y_up = y1;
+            float y_down = y1;
+            float dy_up = (float)(y2 - y1) / (x2 - x1);
+            float dy_down = (float)(y3 - y1) / (x3 - x1);
+
+            if (dy_up > dy_down) swap(ref dy_up, ref dy_down);
+
+            for (int i = x1; i <= x2; i++)
+            {
+                // fill line 
+                for (int j = (int)Math.Round(y_up); j <= (int)Math.Round(y_down); j++)
+                {
+                    setPin(array, width, height, i, j, val);
+                }
+                // update end points
+                y_up += dy_up;
+                y_down += dy_down;
+            }
+        }
+
+        static void _fill_right_triangle(int[,] array, int width, int height, int x1, int y1, int x2, int y2, int x3, int y3, int val)
+        {
+            float y_up = y3;
+            float y_down = y3;
+            float dy_up = (float)(y3 - y1) / (x3 - x1);
+            float dy_down = (float)(y2 - y3) / (x2 - x3);
+
+            if (dy_up < dy_down) swap(ref dy_up, ref dy_down);
+
+
+            for (int i = x3; i >= x2; i--)
+            {
+                // fill line 
+                for (int j = (int)Math.Round(y_up); j <= (int)Math.Round(y_down); j++)
+                {
+                    setPin(array, width, height, i, j, val);
+                }
+                // update end points
+                y_up -= dy_up;
+                y_down -= dy_down;
+            }
+        }
+
+        public static void render_triangle(int[,] array, int width, int height, double[] p1, double[] p2, double[] p3, int val)
+        {
+            // https://cglearn.codelight.eu/pub/computer-graphics/task/bresenham-triangle-1 
+            // transform to display space coords
+
+            var p1_disp = get_display_space_coords(width, height, p1);
+            var p2_disp = get_display_space_coords(width, height, p2);
+            var p3_disp = get_display_space_coords(width, height, p3);
+
+
+            int x1 = (int)Math.Round(p1_disp[0]);
+            int y1 = (int)Math.Round(p1_disp[1]);
+            int x2 = (int)Math.Round(p2_disp[0]);
+            int y2 = (int)Math.Round(p2_disp[1]);
+            int x3 = (int)Math.Round(p3_disp[0]);
+            int y3 = (int)Math.Round(p3_disp[1]);
+
+
+            // sort along x axis
+            void swap(ref int a, ref int b) { int tmp = a; a = b; b = tmp; }
+
+            if (x2 > x3) { swap(ref x2,ref x3); swap(ref y2, ref y3); }
+            if (x1 > x2) { swap(ref x1,ref x2); swap(ref y1, ref y2); }
+            if (x2 > x3) { swap(ref x2, ref x3); swap(ref y2, ref y3); }
+
+
+            if (x1 < x2)
+            {
+                _fill_left_triangle(array, width, height, x1, y1, x2, y2, x3, y3, val);
+            }
+            if (x2 < x3)
+            {
+                _fill_right_triangle(array, width, height, x1, y1, x2, y2, x3, y3, val);
+            }
+        }
+
+        public static void render_rectangle(int[,] array, int width, int height, double[] center, double[] corner0, double[] corner1, int val)
+        {
+            double[] get_mirror_point(double[] p1, double[] anchor)
+            {
+                return new double[] { 2 * anchor[0] - p1[0], 2 * anchor[1] - p1[1] };
+            }
+
+            //var p1_disp = get_display_space_coords(width, height, corner0);
+            //var p2_disp = get_display_space_coords(width, height, corner1);
+            //var center_disp = get_display_space_coords(width, height, center);
+
+            var corner2 = get_mirror_point(corner0, center);
+            var corner3 = get_mirror_point(corner1, center);
+
+            render_triangle(array, width, height, corner0, corner2, corner1, val);
+            render_triangle(array, width, height, corner0, corner2, corner3, val);
+        }
+
+        public static void render_agent(int[,] array, int width, int height,  double[] pos, double orientation, int val)
+        {
+            double radius = 3;
+            int step = 8 * (int)radius - 8;
+            double curr_theta = 0;
+
+            var pos1 = new double[] { pos[0] + radius * System.Math.Cos(orientation / 180 * Math.PI),
+                                  pos[1] + radius * System.Math.Sin(orientation / 180 * Math.PI) };
+
+            double[] coord = get_display_space_coords(width, height, pos);
+            double[] coord_1 = get_display_space_coords(width, height, pos1);
+
+            int x0 = (int)Math.Round(coord[0]);
+            int y0 = (int)Math.Round(coord[1]);
+
+            for (int i = 0 ; i < step; i++)
+            {
+
+                int x = (int)Math.Round(x0 + radius * System.Math.Cos(curr_theta));
+                int y = (int)Math.Round(y0 + radius * System.Math.Sin(curr_theta));
+
+                setPin(array, width, height, x, y, val);
+                curr_theta += 2 * Math.PI / step;
+            }
+            render_line(array, width, height, pos, pos1, val);
+        }
+    }
+
+    /// <summary>Representation for a scene</summary>
+    public class SceneData
+    {
+        public List<SceneInst> _data;
+        // display parameters
+        // mode=0 -> ego centric ;  mode = 1 -> static mode
+        public int mode;
+        public double orientation_agent;    // 0~360, 0 represents +y direction
+        public double orientation_map;      // only used for static mode
+        public double scale;
+        public double x0, y0;               // agent position
+        public double x1, y1;               // map center
+        public int point_size;
+
+        public SceneData() : this(0, 0, 0, 1.0, 0, 0,0,0, 5)
+        {
+        }
+
+        public SceneData(int _mode, double _orientation_agent, double _orientation_map, double _scale, double _x0, double _y0, double _x1, double _y1, int _point_size)
+        {
+            _data = new List<SceneInst>();
+            mode = _mode;
+            orientation_agent = _orientation_agent;
+            orientation_map = _orientation_map;
+            scale = _scale;
+            x0 = _x0; // agent center
+            y0 = _y0; // agent center
+            x1 = _x1; 
+            y1 = _y1;
+            point_size = _point_size;
+        }
+
+        public bool save(string path)
+        {
+
+            var serializer = new JavaScriptSerializer();
+            var serializedResult = serializer.Serialize(this);
+            // Console.WriteLine(serializedResult);
+            try
+            {
+                StreamWriter sw = new StreamWriter(path);
+                //Write a line of text
+                sw.WriteLine(serializedResult);
+                sw.Close();
+                Console.WriteLine(serializedResult);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public void print()
+        {
+            var serializer = new JavaScriptSerializer();
+            var serializedResult = serializer.Serialize(this);
+            Console.WriteLine(serializedResult);
+        }
+
+        public static SceneData load(string path)
+        {
+            String json_string;
+            var serializer = new JavaScriptSerializer();
+
+            try
+            {
+                StreamReader sr = new StreamReader(path);
+                //Read the first line of text
+                json_string = sr.ReadToEnd();
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+                return new SceneData();
+            }
+
+            SceneData ret = serializer.Deserialize<SceneData>(json_string);
+            return ret;
+        }
+
+        // render scene to a buffer
+        public bool render(int[,] array, int width, int height)
+        {
+            // 1) translation to the view center
+            // 2) apply scale and rotation transformation (clipspace coords)
+            // 3) offset to the display center and rasterize
+            if (mode == 0)
+            {
+                SceneData.clear(array, width, height);
+                for (int i = 0; i < _data.Count; i++)
+                {
+                    if (!_data[i].isValid) continue;
+                    if (_data[i].type == 0)
+                    {
+                        double[] pos_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].cx, _data[i].cy, x0, y0, scale, 90-orientation_agent);
+
+                        Renderer.render_circle(array, width, height, point_size, pos_clipspace, _data[i].semantic_label);
+                    }
+                    else if (_data[i].type == 2)
+                    {
+                        double[] pos0_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x0, _data[i].y0, x0, y0, scale, 90 - orientation_agent);
+                        double[] pos1_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x1, _data[i].y1, x0, y0, scale, 90 - orientation_agent);
+                        Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, _data[i].semantic_label);
+                    }
+                    else if (_data[i].type == 1)
+                    {
+                        double[] corner0_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x0, _data[i].y0, x0, y0, scale, 90 - orientation_agent);
+                        double[] corner1_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x1, _data[i].y1, x0, y0, scale, 90 - orientation_agent);
+                        double[] center_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
+                        Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, _data[i].semantic_label);
+                    }
+                }
+                double[] agent_clipspace = new double[] { 0,0};
+                Renderer.render_agent(array, width, height, agent_clipspace, 90, 20);
+            }
+            else if (mode == 1)  
+            {
+                SceneData.clear(array, width, height);
+                for (int i = 0; i < _data.Count; i++)
+                {
+                    if (!_data[i].isValid) continue;
+                    if (_data[i].type == 0)
+                    {
+                        double[] pos_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].cx, _data[i].cy, x1, y1, scale, orientation_map);
+
+                        Renderer.render_circle(array, width, height, point_size, pos_clipspace, _data[i].semantic_label);
+                    }
+                    else if (_data[i].type == 2)
+                    {
+                        double[] pos0_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x0, _data[i].y0, x1, y1, scale, orientation_map);
+                        double[] pos1_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x1, _data[i].y1, x1, y1, scale, orientation_map);
+                        Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, _data[i].semantic_label);
+                    }
+                    else if (_data[i].type == 1)
+                    {
+                        double[] corner0_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x0, _data[i].y0, x1, y1, scale, orientation_map);
+                        double[] corner1_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x1, _data[i].y1, x1, y1, scale, orientation_map);
+                        double[] center_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].cx, _data[i].cy, x1, y1, scale, orientation_map);
+                        Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, _data[i].semantic_label);
+                    }
+                }
+                double[] agent_clipspace = Renderer.clipspace_trans_2D(
+                            x0, y0, x1, y1, scale, orientation_map);
+                Renderer.render_agent(array, width, height, agent_clipspace, orientation_agent + orientation_map, 20);
+            }
+            else
+            {
+                Console.WriteLine("Exception: " + "Not implemented error.");
+                return false;
+            }
+            return true;
+        }
+
+
+        public static void flush(int[,] array, bool[,] array_display, int width, int height)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    array_display[i, j] = array[i, j] >= 0;
+                }
+            }
+        }
+
+        public static void clear(bool[,] array, int width, int height)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    array[i, j] = false;
+                }
+            }
+        }
+
+        public static void clear(int[,] array, int width, int height)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    array[i, j] = -1;
+                }
+            }
+        }
+
+        public void set_view_center(double x, double y)
+        {
+            x1 = x;
+            y1 = y;
+        }
+
+        public void set_scale(double s)
+        {
+            scale = s;
+        }
+
+        public void set_agent_orientation(double theta)
+        {
+            orientation_agent = theta;
+        }
+
+        public void zoom_in()
+        {
+            scale *= PARAMS.SCALE_STEP;
+            scale = scale > PARAMS.MAX_SCALE ? PARAMS.MAX_SCALE : scale;
+        }
+
+        public void zoom_out()
+        {
+            scale /= PARAMS.SCALE_STEP;
+            scale = scale > PARAMS.MAX_SCALE ? PARAMS.MAX_SCALE : scale;
+        }
+
+        public void move_up()
+        {
+            x0 += PARAMS.MOVE_STEP / scale * Math.Cos(orientation_agent / 180 * Math.PI);
+            y0 += PARAMS.MOVE_STEP / scale * Math.Sin(orientation_agent / 180 * Math.PI);
+        }
+
+        public void move_down()
+        {
+            x0 -= PARAMS.MOVE_STEP / scale * Math.Cos(orientation_agent / 180 * Math.PI);
+            y0 -= PARAMS.MOVE_STEP / scale * Math.Sin(orientation_agent / 180 * Math.PI);
+        }
+
+        public void move_right()
+        {
+            x0 += PARAMS.MOVE_STEP / scale * Math.Sin(orientation_agent / 180 * Math.PI);
+            y0 -= PARAMS.MOVE_STEP / scale * Math.Cos(orientation_agent / 180 * Math.PI);
+        }
+        public void move_left()
+        {
+            x0 -= PARAMS.MOVE_STEP / scale * Math.Sin(orientation_agent / 180 * Math.PI);
+            y0 += PARAMS.MOVE_STEP / scale * Math.Cos(orientation_agent / 180 * Math.PI);
+        }
+
+        public void rot_left()
+        {
+            orientation_agent += PARAMS.ROT_STEP;
+        }
+
+        public void rot_right()
+        {
+            orientation_agent -= PARAMS.ROT_STEP;
+        }
+
+        public void set_mode(int _mode)
+        {
+            mode = _mode;
+        }
+
+        public string get_label_text(int[,] array, int width, int height, int px, int py, bool chinese)
+        {
+            if (px < 0 || px >= width || py < 0 || py >= height) return "";
+            int label_id = array[px, py];
+            if (label_id >= 0 && label_id < 20)
+            {
+                if (!chinese)
+                {
+                    return Semantics.labels[label_id];
+                }
+                else { 
+                    return Semantics.labels_chinese[label_id];
+                }
+            }
+            return "";
+        }
+    }
+}
