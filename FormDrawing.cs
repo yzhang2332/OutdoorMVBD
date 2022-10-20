@@ -14,6 +14,7 @@ namespace Metec.MVBDClient
         bool isListening;
         int px, py; // finger position
         NotificationsMask mask;
+        string ip;
 
         protected SceneData _scene;
 
@@ -24,9 +25,21 @@ namespace Metec.MVBDClient
             InitializeComponent();
         }
 
+        public FormDrawing(string ip)
+        {
+            this.ip = ip;
+            InitializeComponent();
+        }
+
         private void FormDrawings_Load(object sender, EventArgs e)
         {
-            _con = new MVBDConnection(this);
+            if (ip != null)
+            {
+                _con = new MVBDConnection(this, ip, 2018);
+            }
+            else {
+                _con = new MVBDConnection(this);
+            }
 
             _con.FingerChanged += _con_FingerChanged;
             _con.KeyDown += _con_KeyDown;
@@ -54,6 +67,11 @@ namespace Metec.MVBDClient
             scene_paths[8] = "scene_9.json";
 
             // _scene = new SceneData();
+        }
+
+        private void FormDrawings_Shown(object sender, EventArgs e)
+        {
+            this.Visible = false;
         }
 
         private void render_and_flush()
@@ -700,5 +718,23 @@ namespace Metec.MVBDClient
             }
 
         }
+
+        // check whether is connected
+        public bool IsConnected()
+        {
+            if(_con == null)
+            {
+                return false;
+            }
+            return _con.IsConnected();
+        }
+
+        // update json file and load
+        public void UpdateJsonFile(string fileName)
+        {
+            txtPath.Text = fileName;
+            btnLoadScene_Click(null, null);
+        }
+
     }
 }

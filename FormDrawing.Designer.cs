@@ -379,6 +379,7 @@
             this.Text = "2nd Example (Drawings)";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormDrawing_FormClosing);
             this.Load += new System.EventHandler(this.FormDrawings_Load);
+            this.Shown += new System.EventHandler(this.FormDrawings_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
