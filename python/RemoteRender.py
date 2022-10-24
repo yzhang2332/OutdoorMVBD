@@ -19,9 +19,7 @@ def UpdateThread(draw):
     while not draw.IsConnected():
         time.sleep(1)
     
-    draw.UpdateJsonFile("scene.json")
-    time.sleep(10)
-    draw.UpdateJsonFile("scene_info.json")
+    draw.UpdateJsonFile("scene_1.json")
 
 if __name__ == "__main__":
     draw = FormDrawing("192.168.2.119") # MVBD ip

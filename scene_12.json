@@ -1,0 +1,23 @@
+{
+  "_data": [
+    {
+      "isValid": true,
+      "type": 2,
+      "semantic_label": 5,
+      "id": 0,
+      "cx": 7,
+      "cy": 7,
+      "x0": 9,
+      "y0": 0,
+      "x1": 0,
+      "y1": 0
+    }
+  ],
+  "mode": 0,
+  "orientation_agent": 0,
+  "orientation_map": 0,
+  "scale": 1.0,
+  "x0": 0,
+  "y0": 0,
+  "point_size": 3
+}

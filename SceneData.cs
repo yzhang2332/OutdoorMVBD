@@ -441,6 +441,7 @@ namespace Metec.MVBDClient
         public double x0, y0;               // agent position
         public double x1, y1;               // map center
         public int point_size;
+        public int current_suffix;
 
         public SceneData() : this(0, 0, 0, 1.0, 0, 0,0,0, 5)
         {
@@ -458,6 +459,7 @@ namespace Metec.MVBDClient
             x1 = _x1; 
             y1 = _y1;
             point_size = _point_size;
+            current_suffix = 1;
         }
 
         public bool save(string path)
@@ -699,7 +701,7 @@ namespace Metec.MVBDClient
         public string get_label_text(int[,] array, int width, int height, int px, int py, bool chinese)
         {
             if (px < 0 || px >= width || py < 0 || py >= height) return "";
-            int label_id = array[px, py];
+            int label_id = array[px, py] % 1000;
             if (label_id >= 0 && label_id < 20)
             {
                 if (!chinese)
@@ -711,6 +713,17 @@ namespace Metec.MVBDClient
                 }
             }
             return "";
+        }
+
+        public int get_suffix(int[,] array, int width, int height, int px, int py)
+        {
+            if (px < 0 || px >= width || py < 0 || py >= height) return 0;
+            if (array[px, py] <= 0)
+            {
+                return -1;
+            }
+            int file_suffix = array[px, py] / 1000;
+            return file_suffix;
         }
     }
 }

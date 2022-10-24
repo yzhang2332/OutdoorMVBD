@@ -1,0 +1,35 @@
+{
+  "_data": [
+    {
+      "isValid": true,
+      "type": 1,
+      "semantic_label": 11005,
+      "id": 0,
+      "cx": 0,
+      "cy": 10,
+      "x0": 3,
+      "y0": 13,
+      "x1": -3,
+      "y1": 13
+    }, 
+    {
+      "isValid": true,
+      "type": 1,
+      "semantic_label": 12005,
+      "id": 0,
+      "cx": 0,
+      "cy": -10,
+      "x0": 3,
+      "y0": -13,
+      "x1": -3,
+      "y1": -13
+    }
+  ],
+  "mode": 0,
+  "orientation_agent": 0,
+  "orientation_map": 0,
+  "scale": 1.0,
+  "x0": 0,
+  "y0": 0,
+  "point_size": 3
+}
