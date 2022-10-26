@@ -528,7 +528,7 @@ namespace Metec.MVBDClient
                     if (_data[i].type == 0)
                     {
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(
-                            _data[i].cx, _data[i].cy, x0, y0, scale, 90-orientation_agent);
+                            _data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
 
                         Renderer.render_circle(array, width, height, point_size, pos_clipspace, _data[i].semantic_label);
                     }
@@ -549,6 +549,11 @@ namespace Metec.MVBDClient
                         double[] center_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
                         Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, _data[i].semantic_label);
+                    }
+                    else if (_data[i].type == 3)
+                    {
+                        double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
+                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, _data[i].semantic_label);
                     }
                 }
                 double[] agent_clipspace = new double[] { 0,0};
@@ -584,6 +589,11 @@ namespace Metec.MVBDClient
                         double[] center_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].cx, _data[i].cy, x1, y1, scale, orientation_map);
                         Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, _data[i].semantic_label);
+                    }
+                    else if (_data[i].type == 3)
+                    {
+                        double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
+                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, _data[i].semantic_label);
                     }
                 }
                 double[] agent_clipspace = Renderer.clipspace_trans_2D(

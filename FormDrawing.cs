@@ -71,7 +71,7 @@ namespace Metec.MVBDClient
 
         private void FormDrawings_Shown(object sender, EventArgs e)
         {
-            this.Visible = false;
+            this.Visible = true;
         }
 
         private void render_and_flush()
