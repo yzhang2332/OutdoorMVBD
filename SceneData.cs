@@ -17,6 +17,7 @@ namespace Metec.MVBDClient
         public const double SCALE_STEP = 1.2;
         public const double MOVE_STEP = 3;  // in pins
         public const double ROT_STEP = 10;
+        public const int AGENT_VAL = 100;
     }
 
     public class SceneInst
@@ -47,49 +48,62 @@ namespace Metec.MVBDClient
     public class Semantics
     {
         public static string[] labels = {
-            "wall",
-            "floor",
-            "cabinet",
-            "bed",
-            "chair",
-            "sofa",
-            "table",
-            "door",
-            "window",
-            "bookshelf",
-            "picture",
-            "counter",
-            "desk",
-            "curtain",
-            "refrigerator",
-            "shower curtain",
-            "toilet",
-            "sink",
-            "bathtub",
-            "otherfurniture"
+            "water",
+            "sidewalk",
+            "sign",
+            "building",
+            "tree",
+            "bench",
+            "rock",
+            "sign",
+            "dustbin",
+            "bush",
+            "light",
+            "shadow",
+            "man",
+            "girl",
+            "person",
+            "grass",
+            "truck",
+            "branch",
+            "leaf",
+            "armrest",
+            "leg",
+            "bag",
+            "bird",
+            "pant",
+            "shoe",
+            "jacket"
+
         };
 
         public static string[] labels_chinese = {
-            "墙壁",
-            "地面",
-            "立柜",
-            "床",
-            "椅子",
-            "沙发",
-            "餐桌",
-            "门",
-            "窗户",
-            "书架",
-            "装饰画",
-            "柜台",
-            "办公桌",
-            "窗帘",
-            "空调",
-            "浴帘",
-            "马桶",
-            "水池",
-            "浴缸",
-            "其他"
+            "湖",
+            "人行道",
+            "路标",
+            "建筑",
+            "树",
+            "长椅",
+            "石头",
+            "路标",
+            "垃圾桶",
+            "灌木",
+            "路灯",
+            "阴凉",
+            "男性",
+            "女孩",
+            "成年人",
+            "草丛",
+            "树干",
+            "树枝",
+            "叶子",
+            "扶手",
+            "长椅腿",
+            "书包",
+            "鸟",
+            "裤子",
+            "鞋子",
+            "夹克"
         };
     }
     public class Renderer
@@ -400,31 +414,43 @@ namespace Metec.MVBDClient
             render_triangle(array, width, height, corner0, corner2, corner3, val);
         }
 
-        public static void render_agent(int[,] array, int width, int height,  double[] pos, double orientation, int val)
-        {
-            double radius = 3;
-            int step = 8 * (int)radius - 8;
-            double curr_theta = 0;
+        //public static void render_agent(int[,] array, int width, int height,  double[] pos, double orientation, int val)
+        //{
+        //    double radius = 2;
+        //    int step = 8 * (int)radius - 8;
+        //    double curr_theta = 0;
 
-            var pos1 = new double[] { pos[0] + radius * System.Math.Cos(orientation / 180 * Math.PI),
+        //    var pos1 = new double[] { pos[0] + radius * System.Math.Cos(orientation / 180 * Math.PI),
+        //                          pos[1] + radius * System.Math.Sin(orientation / 180 * Math.PI) };
+
+        //    double[] coord = get_display_space_coords(width, height, pos);
+        //    double[] coord_1 = get_display_space_coords(width, height, pos1);
+
+        //    int x0 = (int)Math.Round(coord[0]);
+        //    int y0 = (int)Math.Round(coord[1]);
+
+        //    for (int i = 0 ; i < step; i++)
+        //    {
+
+        //        int x = (int)Math.Round(x0 + radius * System.Math.Cos(curr_theta));
+        //        int y = (int)Math.Round(y0 + radius * System.Math.Sin(curr_theta));
+
+        //        setPin(array, width, height, x, y, val);
+        //        curr_theta += 2 * Math.PI / step;
+        //    }
+        //    render_line(array, width, height, pos, pos1, val);
+        //}
+        public static void render_agent(int[,] array, int width, int height, double[] pos, double orientation, int val)
+        {
+            double radius = 5;
+
+            var pos1 = new double[] { pos[0] + radius * System.Math.Cos(orientation / 180 * Math.PI)/ 2,
+                                  pos[1] + radius * System.Math.Sin(orientation / 180 * Math.PI) / 2 };
+            var pos2 = new double[] { pos[0] + radius * System.Math.Cos(orientation / 180 * Math.PI),
                                   pos[1] + radius * System.Math.Sin(orientation / 180 * Math.PI) };
 
-            double[] coord = get_display_space_coords(width, height, pos);
-            double[] coord_1 = get_display_space_coords(width, height, pos1);
-
-            int x0 = (int)Math.Round(coord[0]);
-            int y0 = (int)Math.Round(coord[1]);
-
-            for (int i = 0 ; i < step; i++)
-            {
-
-                int x = (int)Math.Round(x0 + radius * System.Math.Cos(curr_theta));
-                int y = (int)Math.Round(y0 + radius * System.Math.Sin(curr_theta));
-
-                setPin(array, width, height, x, y, val);
-                curr_theta += 2 * Math.PI / step;
-            }
-            render_line(array, width, height, pos, pos1, val);
+            render_circle(array, width, height, (int)radius, pos, val);
+            render_line(array, width, height, pos1, pos2, val);
         }
     }
 
@@ -557,7 +583,7 @@ namespace Metec.MVBDClient
                     }
                 }
                 double[] agent_clipspace = new double[] { 0,0};
-                Renderer.render_agent(array, width, height, agent_clipspace, 90, 20);
+                Renderer.render_agent(array, width, height, agent_clipspace, 90, PARAMS.AGENT_VAL);
             }
             else if (mode == 1)  
             {
@@ -592,13 +618,14 @@ namespace Metec.MVBDClient
                     }
                     else if (_data[i].type == 3)
                     {
+                        //double[] pos_clipspace = { _data[i].cx, _data[i].cy };
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
                         Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, _data[i].semantic_label);
                     }
                 }
                 double[] agent_clipspace = Renderer.clipspace_trans_2D(
                             x0, y0, x1, y1, scale, orientation_map);
-                Renderer.render_agent(array, width, height, agent_clipspace, orientation_agent + orientation_map, 20);
+                Renderer.render_agent(array, width, height, agent_clipspace, orientation_agent + orientation_map, PARAMS.AGENT_VAL);
             }
             else
             {
@@ -712,7 +739,7 @@ namespace Metec.MVBDClient
         {
             if (px < 0 || px >= width || py < 0 || py >= height) return "";
             int label_id = array[px, py] % 1000;
-            if (label_id >= 0 && label_id < 20)
+            if (label_id >= 0 && label_id < Semantics.labels.Length)
             {
                 if (!chinese)
                 {
