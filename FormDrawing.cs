@@ -126,11 +126,6 @@ namespace Metec.MVBDClient
                 return;
             }
             int file_suffix = _scene.get_suffix(_con.VirtualDevice.Pins.Array_ext, _con.PinCountX, _con.PinCountY, px, py);
-            if (file_suffix == -1)
-            {
-                // back to last
-                file_suffix = _scene.current_suffix / 10;
-            }
             if (file_suffix > 0)
             {
                 string fileName = string.Format("scene_{0}.json", file_suffix);
@@ -280,11 +275,6 @@ namespace Metec.MVBDClient
             if (chkImmediateVoice.Checked)
             {
                 send_voice();
-            }
-
-            if (e.Finger.IsPressed)
-            {
-                change_scene();
             }
         }
         /// <summary>Event Keyboard key down (Cmd=66)</summary>
@@ -450,6 +440,17 @@ namespace Metec.MVBDClient
             else if (e.Key == 220)
             {
                 send_voice();
+                change_scene();
+            }
+            else if (e.Key == 207)
+            {
+                int file_suffix = _scene.current_suffix / 10;
+                if (file_suffix > 0)
+                {
+                    string fileName = string.Format("scene_{0}.json", file_suffix);
+                    UpdateJsonFile(fileName);
+                    _scene.current_suffix = file_suffix;
+                }
             }
         }
 
