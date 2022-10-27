@@ -17,12 +17,15 @@ namespace Metec.MVBDClient
         public const double SCALE_STEP = 1.2;
         public const double MOVE_STEP = 3;  // in pins
         public const double ROT_STEP = 10;
+        public const int LONG_PRESS = 800;
+        public const int BLANK_ID = -1;
+        public const int NULL_ID = -2;
         public static ExtraInfo AGENT_INFO = new ExtraInfo { 
             Id = -1,
             IsVisible = true,
             Type = -1,
             Source = null,
-            SemanticLabel = 100,
+            SemanticLabel = 29,
         };
     }
 
@@ -81,8 +84,11 @@ namespace Metec.MVBDClient
             "bird",
             "pant",
             "shoe",
-            "jacket"
-
+            "jacket",
+            "near",
+            "on",
+            "have",
+            "me"
         };
 
         public static string[] labels_chinese = {
@@ -111,7 +117,11 @@ namespace Metec.MVBDClient
             "鸟",
             "裤子",
             "鞋子",
-            "夹克"
+            "夹克",
+            "在附近",
+            "在上面",
+            "拥有",
+            "自己"
         };
     }
     public class Renderer

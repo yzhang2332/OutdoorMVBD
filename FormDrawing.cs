@@ -93,6 +93,7 @@ namespace Metec.MVBDClient
         }
 
         private string last_spoken;
+        private DateTimeOffset last_spoken_time;
         private void send_voice()
         {
             if (_scene == null)
@@ -106,11 +107,13 @@ namespace Metec.MVBDClient
                 return;
             }
             string semantic_label = _scene.get_label_text(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py, chkChineseSpeech.Checked);
-            if (semantic_label != last_spoken)
+            DateTimeOffset now = DateTimeOffset.Now;
+            if (semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= 1)
             {
                 _con.SendSpeakText(semantic_label);
                 Console.WriteLine("Speak: " + semantic_label);
                 last_spoken = semantic_label;
+                last_spoken_time = now;
             }
         }
 
@@ -133,9 +136,19 @@ namespace Metec.MVBDClient
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
             }
+            else if (file_suffix < 0)
+            {
+                file_suffix = _scene.current_suffix / 10;
+                if (file_suffix > 0)
+                {
+                    string fileName = string.Format("scene_{0}.json", file_suffix);
+                    UpdateJsonFile(fileName);
+                    _scene.current_suffix = file_suffix;
+                }
+            }
         }
 
-        private void render_edge()
+        private void render_edge(ExtraInfo info)
         {
             if (_scene == null)
             {
@@ -147,12 +160,11 @@ namespace Metec.MVBDClient
                 Console.WriteLine("Exception: " + "MVBD not connected.");
                 return;
             }
-            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
-            if (info != null && (info.Type == 4 || info.Type == -1)) 
+            if (info == null || info.Type == 4 || info.Type == -1)
             {
                 return;
             }
-            int id = info == null ? -1 : info.Id;
+            int id = info == null ? PARAMS.BLANK_ID : info.Id;
             for (int i = 0; i < _scene._data.Count(); i++) 
             {
                 if (_scene._data[i].type == 4) 
@@ -299,6 +311,10 @@ namespace Metec.MVBDClient
             }
         }
 
+        private int last_pressed_id;
+        private int last_pressed_x;
+        private int last_pressed_y;
+        private DateTimeOffset last_pressed_time;
         void _con_FingerChanged(object sender, MVBDFingerEventArgs e)
         {
             AddToList("Finger:      ", e.Finger);
@@ -313,9 +329,35 @@ namespace Metec.MVBDClient
                 send_voice();
             }
 
+            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
             if (e.Finger.IsPressed)
             {
-                render_edge();
+                render_edge(info);
+                int id = info == null ? PARAMS.BLANK_ID : info.Id;
+                //if (last_pressed_id != id)
+                //{
+                //    last_pressed_id = id;
+                //    last_pressed_time = DateTimeOffset.Now;
+                //}
+                if (last_pressed_x != px || last_pressed_y != py)
+                {
+                    last_pressed_x = px;
+                    last_pressed_y = py;
+                    last_pressed_id = id;
+                    last_pressed_time = DateTimeOffset.Now;
+                }
+            }
+            else
+            {
+                // long press
+                int id = info == null ? PARAMS.BLANK_ID : info.Id;
+                if (last_pressed_id != PARAMS.NULL_ID && DateTimeOffset.Now.Subtract(last_pressed_time).TotalMilliseconds > PARAMS.LONG_PRESS)
+                {
+                    change_scene();
+                }
+                last_pressed_id = PARAMS.NULL_ID;
+                last_pressed_x = -1;
+                last_pressed_y = -1;
             }
         }
         /// <summary>Event Keyboard key down (Cmd=66)</summary>
