@@ -17,7 +17,13 @@ namespace Metec.MVBDClient
         public const double SCALE_STEP = 1.2;
         public const double MOVE_STEP = 3;  // in pins
         public const double ROT_STEP = 10;
-        public const int AGENT_VAL = 100;
+        public static ExtraInfo AGENT_INFO = new ExtraInfo { 
+            Id = -1,
+            IsVisible = true,
+            Type = -1,
+            Source = null,
+            SemanticLabel = 100,
+        };
     }
 
     public class SceneInst
@@ -29,6 +35,7 @@ namespace Metec.MVBDClient
         public int id;
         public double cx, cy; // center
         public double x0, y0, x1, y1;  // boundingbox parameters: up left corner  and up right corner; if type == 2 , represents two end points 
+        public int[] source;
         
         public SceneInst()
         {
@@ -42,6 +49,7 @@ namespace Metec.MVBDClient
             y0 = 0;
             x1 = 0;
             y1 = 0;
+            source = null;
         }
     }
 
@@ -137,13 +145,19 @@ namespace Metec.MVBDClient
             return new double[] { pos[0] + width / 2, height / 2 - pos[1]};
         }
 
-        public static void setPin(int[,] array, int width, int height, int x, int y, int val)
+        //public static void setPin(int[,] array, int width, int height, int x, int y, int val)
+        //{
+        //    if (x >= 0 && x < width && y >= 0 && y < height)
+        //        array[x, y] = val;
+        //}
+
+        public static void setPin(ExtraInfo[,] array, int width, int height, int x, int y, ExtraInfo val)
         {
             if (x >= 0 && x < width && y >= 0 && y < height)
                 array[x, y] = val;
         }
 
-        public static void render_circle(int[,] array, int width, int height, int size, double[] pos, int val)
+        public static void render_circle(ExtraInfo[,] array, int width, int height, int size, double[] pos, ExtraInfo val)
         {
             if (size % 2 != 1)
             {
@@ -176,7 +190,7 @@ namespace Metec.MVBDClient
             }
         }
 
-        public static void render_line(int[,] array, int width, int height, double[] pos0, double[] pos1, int val)
+        public static void render_line(ExtraInfo[,] array, int width, int height, double[] pos0, double[] pos1, ExtraInfo val)
         {
             // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
             double[] pos0_disp = get_display_space_coords(width, height, pos0);
@@ -315,7 +329,7 @@ namespace Metec.MVBDClient
         static void swap(ref int a, ref int b) { int tmp = a; a = b; b = tmp; }
         static void swap(ref float a, ref float b) { float tmp = a; a = b; b = tmp; }
         // render 
-        static void _fill_left_triangle(int[,] array, int width, int height, int x1, int y1, int x2, int y2, int x3, int y3, int val)
+        static void _fill_left_triangle(ExtraInfo[,] array, int width, int height, int x1, int y1, int x2, int y2, int x3, int y3, ExtraInfo val)
         {
             float y_up = y1;
             float y_down = y1;
@@ -337,7 +351,7 @@ namespace Metec.MVBDClient
             }
         }
 
-        static void _fill_right_triangle(int[,] array, int width, int height, int x1, int y1, int x2, int y2, int x3, int y3, int val)
+        static void _fill_right_triangle(ExtraInfo[,] array, int width, int height, int x1, int y1, int x2, int y2, int x3, int y3, ExtraInfo val)
         {
             float y_up = y3;
             float y_down = y3;
@@ -360,7 +374,7 @@ namespace Metec.MVBDClient
             }
         }
 
-        public static void render_triangle(int[,] array, int width, int height, double[] p1, double[] p2, double[] p3, int val)
+        public static void render_triangle(ExtraInfo[,] array, int width, int height, double[] p1, double[] p2, double[] p3, ExtraInfo val)
         {
             // https://cglearn.codelight.eu/pub/computer-graphics/task/bresenham-triangle-1 
             // transform to display space coords
@@ -396,7 +410,7 @@ namespace Metec.MVBDClient
             }
         }
 
-        public static void render_rectangle(int[,] array, int width, int height, double[] center, double[] corner0, double[] corner1, int val)
+        public static void render_rectangle(ExtraInfo[,] array, int width, int height, double[] center, double[] corner0, double[] corner1, ExtraInfo val)
         {
             double[] get_mirror_point(double[] p1, double[] anchor)
             {
@@ -440,7 +454,7 @@ namespace Metec.MVBDClient
         //    }
         //    render_line(array, width, height, pos, pos1, val);
         //}
-        public static void render_agent(int[,] array, int width, int height, double[] pos, double orientation, int val)
+        public static void render_agent(ExtraInfo[,] array, int width, int height, double[] pos, double orientation, ExtraInfo val)
         {
             double radius = 5;
 
@@ -540,7 +554,7 @@ namespace Metec.MVBDClient
         }
 
         // render scene to a buffer
-        public bool render(int[,] array, int width, int height)
+        public bool render(ExtraInfo[,] array, int width, int height)
         {
             // 1) translation to the view center
             // 2) apply scale and rotation transformation (clipspace coords)
@@ -550,21 +564,22 @@ namespace Metec.MVBDClient
                 SceneData.clear(array, width, height);
                 for (int i = 0; i < _data.Count; i++)
                 {
-                    if (!_data[i].isValid) continue;
-                    if (_data[i].type == 0)
-                    {
-                        double[] pos_clipspace = Renderer.clipspace_trans_2D(
-                            _data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
-
-                        Renderer.render_circle(array, width, height, point_size, pos_clipspace, _data[i].semantic_label);
-                    }
-                    else if (_data[i].type == 2)
+                    // if (!_data[i].isValid) continue;
+                    ExtraInfo info = ExtraInfo.GetFromSceneInst(_data[i]);
+                    if (_data[i].type == 2 || _data[i].type == 4)
                     {
                         double[] pos0_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].x0, _data[i].y0, x0, y0, scale, 90 - orientation_agent);
                         double[] pos1_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].x1, _data[i].y1, x0, y0, scale, 90 - orientation_agent);
-                        Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, _data[i].semantic_label);
+                        Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, info);
+                    }
+                    else if(_data[i].type == 0)
+                    {
+                        double[] pos_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
+
+                        Renderer.render_circle(array, width, height, point_size, pos_clipspace, info);
                     }
                     else if (_data[i].type == 1)
                     {
@@ -574,37 +589,38 @@ namespace Metec.MVBDClient
                             _data[i].x1, _data[i].y1, x0, y0, scale, 90 - orientation_agent);
                         double[] center_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
-                        Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, _data[i].semantic_label);
+                        Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, info);
                     }
                     else if (_data[i].type == 3)
                     {
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
-                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, _data[i].semantic_label);
+                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
                     }
                 }
                 double[] agent_clipspace = new double[] { 0,0};
-                Renderer.render_agent(array, width, height, agent_clipspace, 90, PARAMS.AGENT_VAL);
+                Renderer.render_agent(array, width, height, agent_clipspace, 90, PARAMS.AGENT_INFO);
             }
             else if (mode == 1)  
             {
                 SceneData.clear(array, width, height);
                 for (int i = 0; i < _data.Count; i++)
                 {
-                    if (!_data[i].isValid) continue;
-                    if (_data[i].type == 0)
+                    ExtraInfo info = ExtraInfo.GetFromSceneInst(_data[i]);
+                    //if (!_data[i].isValid) continue;
+                    if (_data[i].type == 2 || _data[i].type == 4)
+                    {
+                        double[] pos0_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x0, _data[i].y0, x0, y0, scale, orientation_map);
+                        double[] pos1_clipspace = Renderer.clipspace_trans_2D(
+                            _data[i].x1, _data[i].y1, x0, y0, scale, orientation_map);
+                        Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, info);
+                    }
+                    else if(_data[i].type == 0)
                     {
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].cx, _data[i].cy, x1, y1, scale, orientation_map);
 
-                        Renderer.render_circle(array, width, height, point_size, pos_clipspace, _data[i].semantic_label);
-                    }
-                    else if (_data[i].type == 2)
-                    {
-                        double[] pos0_clipspace = Renderer.clipspace_trans_2D(
-                            _data[i].x0, _data[i].y0, x1, y1, scale, orientation_map);
-                        double[] pos1_clipspace = Renderer.clipspace_trans_2D(
-                            _data[i].x1, _data[i].y1, x1, y1, scale, orientation_map);
-                        Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, _data[i].semantic_label);
+                        Renderer.render_circle(array, width, height, point_size, pos_clipspace, info);
                     }
                     else if (_data[i].type == 1)
                     {
@@ -614,18 +630,18 @@ namespace Metec.MVBDClient
                             _data[i].x1, _data[i].y1, x1, y1, scale, orientation_map);
                         double[] center_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].cx, _data[i].cy, x1, y1, scale, orientation_map);
-                        Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, _data[i].semantic_label);
+                        Renderer.render_rectangle(array, width, height, center_clipspace, corner0_clipspace, corner1_clipspace, info);
                     }
                     else if (_data[i].type == 3)
                     {
                         //double[] pos_clipspace = { _data[i].cx, _data[i].cy };
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
-                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, _data[i].semantic_label);
+                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
                     }
                 }
                 double[] agent_clipspace = Renderer.clipspace_trans_2D(
                             x0, y0, x1, y1, scale, orientation_map);
-                Renderer.render_agent(array, width, height, agent_clipspace, orientation_agent + orientation_map, PARAMS.AGENT_VAL);
+                Renderer.render_agent(array, width, height, agent_clipspace, orientation_agent + orientation_map, PARAMS.AGENT_INFO);
             }
             else
             {
@@ -636,13 +652,13 @@ namespace Metec.MVBDClient
         }
 
 
-        public static void flush(int[,] array, bool[,] array_display, int width, int height)
+        public static void flush(ExtraInfo[,] array, bool[,] array_display, int width, int height)
         {
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    array_display[i, j] = array[i, j] >= 0;
+                    array_display[i, j] = array[i, j] != null && array[i, j].IsVisible;
                 }
             }
         }
@@ -665,6 +681,17 @@ namespace Metec.MVBDClient
                 for (int j = 0; j < height; j++)
                 {
                     array[i, j] = -1;
+                }
+            }
+        }
+
+        public static void clear(ExtraInfo[,] array, int width, int height)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    array[i, j] = null;
                 }
             }
         }
@@ -735,10 +762,14 @@ namespace Metec.MVBDClient
             mode = _mode;
         }
 
-        public string get_label_text(int[,] array, int width, int height, int px, int py, bool chinese)
+        public string get_label_text(ExtraInfo[,] array, int width, int height, int px, int py, bool chinese)
         {
             if (px < 0 || px >= width || py < 0 || py >= height) return "";
-            int label_id = array[px, py] % 1000;
+            if (array[px, py] == null)
+            {
+                return "";
+            }
+            int label_id = array[px, py].SemanticLabel % 1000;
             if (label_id >= 0 && label_id < Semantics.labels.Length)
             {
                 if (!chinese)
@@ -752,15 +783,32 @@ namespace Metec.MVBDClient
             return "";
         }
 
-        public int get_suffix(int[,] array, int width, int height, int px, int py)
+        public int get_suffix(ExtraInfo[,] array, int width, int height, int px, int py)
         {
             if (px < 0 || px >= width || py < 0 || py >= height) return 0;
-            if (array[px, py] <= 0)
+            if (array[px, py] == null)
             {
                 return -1;
             }
-            int file_suffix = array[px, py] / 1000;
+            int file_suffix = array[px, py].SemanticLabel / 1000;
             return file_suffix;
+        }
+
+        public int get_id(ExtraInfo[,] array, int width, int height, int px, int py)
+        {
+            if (px < 0 || px >= width || py < 0 || py >= height) return 0;
+            ExtraInfo info = array[px, py];
+            if (info == null)
+            {
+                return -1;
+            }
+            return info.Id;
+        }
+
+        public ExtraInfo get_extra_info(ExtraInfo[,] array, int width, int height, int px, int py)
+        {
+            if (px < 0 || px >= width || py < 0 || py >= height) return null;
+            return array[px, py];
         }
     }
 }

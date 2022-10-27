@@ -2408,6 +2408,26 @@ namespace Metec.MVBDClient
 
     }
 
+    public class ExtraInfo
+    {
+        public int SemanticLabel;
+        public int Id;
+        public int[] Source;
+        public bool IsVisible;
+        public int Type;
+
+        public static ExtraInfo GetFromSceneInst(SceneInst scene)
+        {
+            return new ExtraInfo
+            {
+                Id = scene.id,
+                SemanticLabel = scene.semantic_label,
+                Source = scene.source,
+                IsVisible = scene.isValid,
+                Type = scene.type
+            };
+        }
+    }
 
     /// <summary>The pins inside a virtual device</summary>
     public class MVBDPins           
@@ -2436,16 +2456,16 @@ namespace Metec.MVBDClient
 
         /// <summary>Intern data array to store the values</summary>
         public bool[,]     Array;
-        public int[,]     Array_ext; //extended array for semantic information
-
-
+        // public int[,]     Array_ext; //extended array for semantic information
+        public ExtraInfo[,] Array_extra;
 
 
         /// <summary>Creates a new pin array</summary>
         public MVBDPins()
         {
             Array = new bool[256,256];
-            Array_ext = new int[256, 256];
+            // Array_ext = new int[256, 256];
+            Array_extra = new ExtraInfo[256, 256];
         }
 
         /// <summary>Gets or sets the value of a pin</summary>

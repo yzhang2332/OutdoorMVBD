@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using System.Linq;
 
 namespace Metec.MVBDClient
 {
@@ -86,8 +87,8 @@ namespace Metec.MVBDClient
                 Console.WriteLine("Exception: " + "MVBD not connected.");
                 return;
             }
-            _scene.render(_con.VirtualDevice.Pins.Array_ext, _con.PinCountX, _con.PinCountY);
-            SceneData.flush(_con.VirtualDevice.Pins.Array_ext, _con.VirtualDevice.Pins.Array, _con.PinCountX, _con.PinCountY);
+            _scene.render(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY);
+            SceneData.flush(_con.VirtualDevice.Pins.Array_extra, _con.VirtualDevice.Pins.Array, _con.PinCountX, _con.PinCountY);
             _con.SendPins();
         }
 
@@ -104,7 +105,7 @@ namespace Metec.MVBDClient
                 Console.WriteLine("Exception: " + "MVBD not connected.");
                 return;
             }
-            string semantic_label = _scene.get_label_text(_con.VirtualDevice.Pins.Array_ext, _con.PinCountX, _con.PinCountY, px, py, chkChineseSpeech.Checked);
+            string semantic_label = _scene.get_label_text(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py, chkChineseSpeech.Checked);
             if (semantic_label != last_spoken)
             {
                 _con.SendSpeakText(semantic_label);
@@ -125,13 +126,48 @@ namespace Metec.MVBDClient
                 Console.WriteLine("Exception: " + "MVBD not connected.");
                 return;
             }
-            int file_suffix = _scene.get_suffix(_con.VirtualDevice.Pins.Array_ext, _con.PinCountX, _con.PinCountY, px, py);
+            int file_suffix = _scene.get_suffix(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
             if (file_suffix > 0)
             {
                 string fileName = string.Format("scene_{0}.json", file_suffix);
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
             }
+        }
+
+        private void render_edge()
+        {
+            if (_scene == null)
+            {
+                Console.WriteLine("Exception: " + "scene is empty, load before drawing.");
+                return;
+            }
+            if (_con.IsConnected() == false)
+            {
+                Console.WriteLine("Exception: " + "MVBD not connected.");
+                return;
+            }
+            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
+            if (info != null && (info.Type == 4 || info.Type == -1)) 
+            {
+                return;
+            }
+            int id = info == null ? -1 : info.Id;
+            for (int i = 0; i < _scene._data.Count(); i++) 
+            {
+                if (_scene._data[i].type == 4) 
+                {
+                    if (_scene._data[i].source.Contains(id))
+                    {
+                        _scene._data[i].isValid = true;
+                    }
+                    else
+                    {
+                        _scene._data[i].isValid = false;
+                    }
+                }
+            }
+            render_and_flush();
         }
 
         private void tmrStatus_Tick(object sender, EventArgs e)
@@ -275,6 +311,11 @@ namespace Metec.MVBDClient
             if (chkImmediateVoice.Checked)
             {
                 send_voice();
+            }
+
+            if (e.Finger.IsPressed)
+            {
+                render_edge();
             }
         }
         /// <summary>Event Keyboard key down (Cmd=66)</summary>
@@ -507,7 +548,7 @@ namespace Metec.MVBDClient
             int width = _con.PinCountX;
             int height = _con.PinCountY;
             SceneData.clear(_con.VirtualDevice.Pins.Array, width, height);
-            SceneData.clear(_con.VirtualDevice.Pins.Array_ext, width, height);
+            SceneData.clear(_con.VirtualDevice.Pins.Array_extra, width, height);
             _con.SendPins();
         }
 
