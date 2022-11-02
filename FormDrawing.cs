@@ -18,6 +18,7 @@ namespace Metec.MVBDClient
         string ip;
 
         protected SceneData _scene;
+        bool flashing_show;
 
         string[] scene_paths;
 
@@ -29,6 +30,7 @@ namespace Metec.MVBDClient
         public FormDrawing(string ip)
         {
             this.ip = ip;
+            this.flashing_show = false;
             InitializeComponent();
         }
 
@@ -88,7 +90,7 @@ namespace Metec.MVBDClient
                 return;
             }
             _scene.render(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY);
-            SceneData.flush(_con.VirtualDevice.Pins.Array_extra, _con.VirtualDevice.Pins.Array, _con.PinCountX, _con.PinCountY);
+            SceneData.flush(_con.VirtualDevice.Pins.Array_extra, _con.VirtualDevice.Pins.Array, _con.PinCountX, _con.PinCountY, flashing_show);
             _con.SendPins();
         }
 
@@ -110,11 +112,16 @@ namespace Metec.MVBDClient
             DateTimeOffset now = DateTimeOffset.Now;
             if (semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= 1)
             {
+                send_voice(semantic_label);
+            }
+        }
+
+        private void send_voice(string semantic_label)
+        {
                 _con.SendSpeakText(semantic_label);
                 Console.WriteLine("Speak: " + semantic_label);
                 last_spoken = semantic_label;
-                last_spoken_time = now;
-            }
+                last_spoken_time = DateTimeOffset.Now;
         }
 
         private void change_scene()
@@ -132,6 +139,8 @@ namespace Metec.MVBDClient
             int file_suffix = _scene.get_suffix(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
             if (file_suffix > 0)
             {
+                string label = _scene.get_semantic_label(PARAMS.VOICE_FORWARD, chkChineseSpeech.Checked);
+                send_voice(label);
                 string fileName = string.Format("scene_{0}.json", file_suffix);
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
@@ -141,6 +150,8 @@ namespace Metec.MVBDClient
                 file_suffix = _scene.current_suffix / 10;
                 if (file_suffix > 0)
                 {
+                    string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
+                    send_voice(label);
                     string fileName = string.Format("scene_{0}.json", file_suffix);
                     UpdateJsonFile(fileName);
                     _scene.current_suffix = file_suffix;
@@ -148,7 +159,7 @@ namespace Metec.MVBDClient
             }
         }
 
-        private void render_edge(ExtraInfo info)
+        private void render_press(ExtraInfo info)
         {
             if (_scene == null)
             {
@@ -160,6 +171,7 @@ namespace Metec.MVBDClient
                 Console.WriteLine("Exception: " + "MVBD not connected.");
                 return;
             }
+
             if (info == null || info.Type == 4 || info.Type == -1)
             {
                 return;
@@ -167,6 +179,7 @@ namespace Metec.MVBDClient
             int id = info == null ? PARAMS.BLANK_ID : info.Id;
             for (int i = 0; i < _scene._data.Count(); i++) 
             {
+                // update edge
                 if (_scene._data[i].type == 4) 
                 {
                     if (_scene._data[i].source.Contains(id))
@@ -324,21 +337,21 @@ namespace Metec.MVBDClient
                 py = e.Finger.PY;
             }
 
+            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
             if (chkImmediateVoice.Checked)
             {
+                // update flashing
+                for (int i = 0; i < _scene._data.Count(); i ++)
+                {
+                    _scene._data[i].isFlashing = info != null && _scene._data[i].id == info.Id && _scene._data[i].semantic_label > 1000 ? true : false;
+                }
                 send_voice();
             }
 
-            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
             if (e.Finger.IsPressed)
             {
-                render_edge(info);
+                render_press(info);
                 int id = info == null ? PARAMS.BLANK_ID : info.Id;
-                //if (last_pressed_id != id)
-                //{
-                //    last_pressed_id = id;
-                //    last_pressed_time = DateTimeOffset.Now;
-                //}
                 if (last_pressed_x != px || last_pressed_y != py)
                 {
                     last_pressed_x = px;
@@ -353,6 +366,7 @@ namespace Metec.MVBDClient
                 int id = info == null ? PARAMS.BLANK_ID : info.Id;
                 if (last_pressed_id != PARAMS.NULL_ID && DateTimeOffset.Now.Subtract(last_pressed_time).TotalMilliseconds > PARAMS.LONG_PRESS)
                 {
+                    AddToList("Pressed:      ", id);
                     change_scene();
                 }
                 last_pressed_id = PARAMS.NULL_ID;
@@ -832,6 +846,15 @@ namespace Metec.MVBDClient
                 render_and_flush();
             }
 
+        }
+
+        private void FlashRefresh(object sender, EventArgs e)
+        {
+            if (_scene != null)
+            {
+                flashing_show = !flashing_show;
+                render_and_flush();
+            }
         }
 
         // check whether is connected

@@ -20,12 +20,17 @@ namespace Metec.MVBDClient
         public const int LONG_PRESS = 800;
         public const int BLANK_ID = -1;
         public const int NULL_ID = -2;
+
+        public const int VOICE_SELF = 29;
+        public const int VOICE_BACK = 30;
+        public const int VOICE_FORWARD = 31;
+
         public static ExtraInfo AGENT_INFO = new ExtraInfo { 
             Id = -1,
             IsVisible = true,
             Type = -1,
             Source = null,
-            SemanticLabel = 29,
+            SemanticLabel = VOICE_SELF,
         };
     }
 
@@ -39,6 +44,7 @@ namespace Metec.MVBDClient
         public double cx, cy; // center
         public double x0, y0, x1, y1;  // boundingbox parameters: up left corner  and up right corner; if type == 2 , represents two end points 
         public int[] source;
+        public bool isFlashing;
         
         public SceneInst()
         {
@@ -88,7 +94,9 @@ namespace Metec.MVBDClient
             "near",
             "on",
             "have",
-            "me"
+            "me",
+            "back",
+            "forward",
         };
 
         public static string[] labels_chinese = {
@@ -121,7 +129,9 @@ namespace Metec.MVBDClient
             "在附近",
             "在上面",
             "拥有",
-            "自己"
+            "自己",
+            "返回",
+            "展开",
         };
     }
     public class Renderer
@@ -662,13 +672,17 @@ namespace Metec.MVBDClient
         }
 
 
-        public static void flush(ExtraInfo[,] array, bool[,] array_display, int width, int height)
+        public static void flush(ExtraInfo[,] array, bool[,] array_display, int width, int height, bool flashing_show=true)
         {
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
                     array_display[i, j] = array[i, j] != null && array[i, j].IsVisible;
+                    if (array[i, j] != null && flashing_show == false && array[i, j].IsFlashing == true)
+                    {
+                        array_display[i, j] = false;
+                    }
                 }
             }
         }
@@ -791,6 +805,18 @@ namespace Metec.MVBDClient
                 }
             }
             return "";
+        }
+
+        public string get_semantic_label(int label_id, bool chinese)
+        {
+            if (!chinese)
+            {
+                return Semantics.labels[label_id];
+            }
+            else
+            {
+                return Semantics.labels_chinese[label_id];
+            }
         }
 
         public int get_suffix(ExtraInfo[,] array, int width, int height, int px, int py)

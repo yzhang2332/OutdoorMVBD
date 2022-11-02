@@ -59,6 +59,7 @@
             this.chkImmediateVoice = new System.Windows.Forms.CheckBox();
             this.lblPort = new System.Windows.Forms.Label();
             this.chkPrintEvents = new System.Windows.Forms.CheckBox();
+            this.flash_timer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // tmrStatus
@@ -272,6 +273,11 @@
             // 
             this.tmr_refresh.Interval = 500;
             this.tmr_refresh.Tick += new System.EventHandler(this.DisplayRefresh);
+            // flash timer
+            // 
+            this.flash_timer.Interval = 400;
+            this.flash_timer.Enabled = true;
+            this.flash_timer.Tick += new System.EventHandler(this.FlashRefresh);
             // 
             // spSerialPort
             // 
@@ -416,5 +422,6 @@
         private System.Windows.Forms.CheckBox chkImmediateVoice;
         private System.Windows.Forms.Label lblPort;
         private System.Windows.Forms.CheckBox chkPrintEvents;
+        private System.Windows.Forms.Timer flash_timer;
     }
 }
