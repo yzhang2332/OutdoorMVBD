@@ -17,9 +17,10 @@ namespace Metec.MVBDClient
         public const double SCALE_STEP = 1.2;
         public const double MOVE_STEP = 3;  // in pins
         public const double ROT_STEP = 10;
-        public const int LONG_PRESS = 800;
+        public const int LONG_PRESS = 500;
         public const int BLANK_ID = -1;
         public const int NULL_ID = -2;
+        public const int DOUDBLE_CLICK_THRES = 2;
 
         public const int VOICE_SELF = 29;
         public const int VOICE_BACK = 30;

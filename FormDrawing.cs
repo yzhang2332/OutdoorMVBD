@@ -327,6 +327,7 @@ namespace Metec.MVBDClient
         private int last_pressed_id;
         private int last_pressed_x;
         private int last_pressed_y;
+        private bool double_click = false;
         private DateTimeOffset last_pressed_time;
         void _con_FingerChanged(object sender, MVBDFingerEventArgs e)
         {
@@ -351,29 +352,56 @@ namespace Metec.MVBDClient
             if (e.Finger.IsPressed)
             {
                 render_press(info);
+                //// long press
+                //int id = info == null ? PARAMS.BLANK_ID : info.Id;
+                //if (last_pressed_x != px || last_pressed_y != py)
+                //{
+                //    last_pressed_x = px;
+                //    last_pressed_y = py;
+                //    last_pressed_id = id;
+                //    last_pressed_time = DateTimeOffset.Now;
+                //}
+
+                // double click
                 int id = info == null ? PARAMS.BLANK_ID : info.Id;
-                if (last_pressed_x != px || last_pressed_y != py)
+                if (is_double_click(px, py))
                 {
-                    last_pressed_x = px;
-                    last_pressed_y = py;
-                    last_pressed_id = id;
-                    last_pressed_time = DateTimeOffset.Now;
+                    AddToList("Double clicked:      ", id);
+                    change_scene();
                 }
+                last_pressed_x = px;
+                last_pressed_y = py;
+                last_pressed_time = DateTimeOffset.Now;
+                double_click = false;
             }
             else
             {
-                // long press
-                int id = info == null ? PARAMS.BLANK_ID : info.Id;
-                if (last_pressed_id != PARAMS.NULL_ID && DateTimeOffset.Now.Subtract(last_pressed_time).TotalMilliseconds > PARAMS.LONG_PRESS)
-                {
-                    AddToList("Pressed:      ", id);
-                    change_scene();
-                }
-                last_pressed_id = PARAMS.NULL_ID;
-                last_pressed_x = -1;
-                last_pressed_y = -1;
+                //// long press
+                //int id = info == null ? PARAMS.BLANK_ID : info.Id;
+                //if (last_pressed_id != PARAMS.NULL_ID && DateTimeOffset.Now.Subtract(last_pressed_time).TotalMilliseconds > PARAMS.LONG_PRESS)
+                //{
+                //    AddToList("Pressed:      ", id);
+                //    change_scene();
+                //}
+                //last_pressed_id = PARAMS.NULL_ID;
+                //last_pressed_x = -1;
+                //last_pressed_y = -1;
+                double_click = true;
             }
         }
+
+        private bool is_double_click(int x, int y)
+        {
+            if (Math.Abs(x - last_pressed_x) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(y - last_pressed_y) < PARAMS.DOUDBLE_CLICK_THRES)
+            {
+                if (DateTimeOffset.Now.Subtract(last_pressed_time).TotalMilliseconds < PARAMS.LONG_PRESS && double_click)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>Event Keyboard key down (Cmd=66)</summary>
         void _con_KeyboardKeyDown(object sender, MVBDKeyEventArgs e)
         {
