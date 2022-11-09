@@ -3,6 +3,7 @@ import clr
 import time
 import os
 import sys
+import win32com.client as win
 
 binPath = os.path.dirname(os.path.abspath(__file__)) + '\\..\\bin\\Debug'
 print(binPath)
@@ -19,10 +20,18 @@ def UpdateThread(draw):
     while not draw.IsConnected():
         time.sleep(1)
     
-    draw.UpdateJsonFile("scene_1.json")
+    draw.UpdateJsonFile("..\\bin\\debug\\scene_1.json")
+
+
+TEXT_SPEAKER = win.Dispatch("SAPI.SpVoice")
+
+def SendVoiceHandler(type, label):
+    if type == 1:
+        TEXT_SPEAKER.Speak(label)
+
 
 if __name__ == "__main__":
-    draw = FormDrawing("192.168.2.119") # MVBD ip
+    draw = FormDrawing("192.168.14.74", SendVoice(SendVoiceHandler)) # MVBD ip
     app = WinForm.Application
 
     updateThread = threading.Thread(target=UpdateThread, args=(draw,))

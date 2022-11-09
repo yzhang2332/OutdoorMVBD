@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace Metec.MVBDClient
 {
+    public delegate void SendVoice(int type, string label);
     public partial class FormDrawing : Form
     {
         protected MVBDConnection    _con;
@@ -19,6 +20,7 @@ namespace Metec.MVBDClient
 
         protected SceneData _scene;
         bool flashing_show;
+        public SendVoice send_voice_handler;
 
         string[] scene_paths;
 
@@ -31,6 +33,14 @@ namespace Metec.MVBDClient
         {
             this.ip = ip;
             this.flashing_show = false;
+            InitializeComponent();
+        }
+
+        public FormDrawing(string ip, SendVoice send_voice_handler)
+        {
+            this.ip = ip;
+            this.flashing_show = false;
+            this.send_voice_handler = send_voice_handler;
             InitializeComponent();
         }
 
@@ -118,10 +128,18 @@ namespace Metec.MVBDClient
 
         private void send_voice(string semantic_label)
         {
+            if (this.send_voice_handler != null)
+            {
+                this.send_voice_handler(1, semantic_label);
+            }
+            else
+            {
                 _con.SendSpeakText(semantic_label);
-                Console.WriteLine("Speak: " + semantic_label);
-                last_spoken = semantic_label;
-                last_spoken_time = DateTimeOffset.Now;
+            }
+            AddToList("Speak:      ", semantic_label);
+            // Console.WriteLine("Speak: " + semantic_label);
+            last_spoken = semantic_label;
+            last_spoken_time = DateTimeOffset.Now;
         }
 
         private void change_scene()

@@ -1,0 +1,42 @@
+{
+  "_data": [
+    {"comment": "ego"},
+    {
+      "isValid": true,
+      "type": 3,
+      "semantic_label": 11000,
+      "id": 0,
+      "cx": 0,
+      "cy": 12,
+      "x0": 15,
+      "comment": "water"
+    },
+    {
+      "isValid": true,
+      "type": 3,
+      "semantic_label": 12001,
+      "id": 1,
+      "cx": 0,
+      "cy": -6,
+      "x0": 9,
+      "comment": "sidewalk"
+    },
+    {
+      "isValid": true,
+      "type": 3,
+      "semantic_label": 13002,
+      "id": 2,
+      "cx": 0,
+      "cy": -16,
+      "x0": 7,
+      "comment": "sign"
+    }
+  ],
+  "mode": 1,
+  "orientation_agent": 0,
+  "orientation_map": 90.0,
+  "point_size": 5,
+  "scale": 1,
+  "x0": 0,
+  "y0": 0
+}
