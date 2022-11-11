@@ -1,0 +1,27 @@
+{
+  "0": {
+    "isValid": "False",
+    "type": 4,
+    "source": [1,2],
+    "weight": 0.89,
+    "name": "走在上面"
+  },
+  "1": {
+    "isValid": "True",
+    "type": 3,
+    "depth": 5.5,
+    "angle": -155.60526315789474,
+    "size": 50,
+    "rec": 0.9,
+    "name": "人行道"
+  },
+  "2": {
+    "isValid": "True",
+    "type": 3,
+    "depth": 6,
+    "angle": -150.732829,
+    "size": 5,
+    "rec": 0.2,
+    "name": "行人"
+  }
+}

@@ -1,0 +1,26 @@
+{
+    "_data": [
+        {
+            "isValid": true,
+            "type": 3,
+            "depth": "10.675324675324676",
+            "angle": -20.16118421052633,
+            "size": 2665,
+            "rec": 0.29602702910278755,
+            "name": "sign",
+            "accessibility": 0,
+            "group": 12,
+            "id": 263,
+            "cx": -16.0,
+            "cy": 5.87455007092129,
+            "x0": 7
+        }
+    ],
+    "mode": 1,
+    "orientation_agent": 0,
+    "orientation_map": 90.0,
+    "point_size": 5,
+    "scale": 1,
+    "x0": 16.0,
+    "y0": -5.87455007092129
+}

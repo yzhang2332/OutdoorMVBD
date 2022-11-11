@@ -1,0 +1,56 @@
+{
+    "_data": [
+        {
+            "isValid": false,
+            "type": 4,
+            "source": [
+                232,
+                250
+            ],
+            "weight": "0.44508773",
+            "name": "to be done",
+            "id": 84,
+            "x0": 16.0,
+            "y0": -9.514450026812705,
+            "x1": 10.513546218532174,
+            "y1": -4.10438841137948
+        },
+        {
+            "isValid": true,
+            "type": 3,
+            "depth": "8.0",
+            "angle": 29.72368421052633,
+            "size": 11560,
+            "rec": 0.9998656450028155,
+            "name": "person",
+            "accessibility": 0,
+            "group": 8,
+            "id": 232,
+            "cx": 16.0,
+            "cy": -9.514450026812705,
+            "x0": 7
+        },
+        {
+            "isValid": true,
+            "type": 3,
+            "depth": "8.0",
+            "angle": 29.33881578947367,
+            "size": 4914,
+            "rec": 0.6840594467255082,
+            "name": "person",
+            "accessibility": 0,
+            "group": 8,
+            "id": 250,
+            "cx": 10.513546218532174,
+            "cy": -4.10438841137948,
+            "x0": 7
+        }
+    ],
+    "mode": 1,
+    "orientation_agent": 0,
+    "orientation_map": 90.0,
+    "point_size": 5,
+    "scale": 1,
+    "x0": 0,
+    "y0": 0
+}

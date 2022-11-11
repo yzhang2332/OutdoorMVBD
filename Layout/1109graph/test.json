@@ -1,0 +1,2358 @@
+{
+    "scene_100.json": {
+        "217": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.651528655539351",
+            "angle": -136.7171052631579,
+            "size": 2612084,
+            "rec": 0.09137975977596569,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 0
+        },
+        "218": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "4.844097415876557",
+            "angle": -150.69078947368422,
+            "size": 951580,
+            "rec": 0.9442821766248538,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 0
+        },
+        "221": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "4.387630819198845",
+            "angle": -150.8684210526316,
+            "size": 784392,
+            "rec": 0.4491095692601206,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 0
+        },
+        "228": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.3652173913043475",
+            "angle": -140.98026315789474,
+            "size": 81360,
+            "rec": 0.8260101858974741,
+            "name": "flower",
+            "accessibility": 0,
+            "group": 0
+        },
+        "235": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.557261956998683",
+            "angle": -105.60197368421052,
+            "size": 322164,
+            "rec": 0.1938040623448154,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 0
+        },
+        "239": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.227027027027027",
+            "angle": -107.73355263157895,
+            "size": 104043,
+            "rec": 0.8501543815709196,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 0
+        },
+        "265": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "4.972222222222222",
+            "angle": -172.06578947368422,
+            "size": 2800,
+            "rec": 0.8173621207426565,
+            "name": "sign",
+            "accessibility": 0,
+            "group": 0
+        },
+        "287": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.13939393939394",
+            "angle": -174.75986842105263,
+            "size": 17622,
+            "rec": 0.9853628851103773,
+            "name": "person",
+            "accessibility": 0,
+            "group": 0
+        },
+        "295": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "4.100952380952381",
+            "angle": -127.56907894736841,
+            "size": 36432,
+            "rec": 0.06300862738132007,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 0
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "0": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                1
+            ],
+            "weight": "0.36126402",
+            "name": "to be done"
+        },
+        "1": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                4
+            ],
+            "weight": "0.29574126",
+            "name": "to be done"
+        },
+        "2": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                11
+            ],
+            "weight": "0.031463053",
+            "name": "to be done"
+        },
+        "3": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                18
+            ],
+            "weight": "0.10676306",
+            "name": "to be done"
+        },
+        "4": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                22
+            ],
+            "weight": "0.040100988",
+            "name": "to be done"
+        },
+        "6": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                48
+            ],
+            "weight": "0.0011144832",
+            "name": "to be done"
+        },
+        "8": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                70
+            ],
+            "weight": "0.0068573505",
+            "name": "to be done"
+        },
+        "9": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                0,
+                78
+            ],
+            "weight": "0.014096566",
+            "name": "to be done"
+        },
+        "11": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                1,
+                11
+            ],
+            "weight": "0.0846177",
+            "name": "to be done"
+        },
+        "12": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                1,
+                48
+            ],
+            "weight": "0.0030594796",
+            "name": "to be done"
+        },
+        "13": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                1,
+                70
+            ],
+            "weight": "0.018827027",
+            "name": "to be done"
+        },
+        "14": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                1,
+                78
+            ],
+            "weight": "0.037932396",
+            "name": "to be done"
+        },
+        "177": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                48,
+                70
+            ],
+            "weight": "0.07472897",
+            "name": "to be done"
+        }
+    },
+    "scene_101.json": {
+        "219": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "15.66826923076923",
+            "angle": 165.70065789473682,
+            "size": 329175,
+            "rec": 0.15510254579492977,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 1
+        },
+        "220": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "6.381360176282051",
+            "angle": 148.88486842105266,
+            "size": 707301,
+            "rec": 0.25761363089866374,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 1
+        },
+        "225": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "13.070426810758303",
+            "angle": 140.32894736842104,
+            "size": 1747438,
+            "rec": 0.7427845335719739,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 1
+        },
+        "238": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.265734265734265",
+            "angle": 125.14144736842104,
+            "size": 4819,
+            "rec": 0.4476122431149462,
+            "name": "backpack",
+            "accessibility": 0,
+            "group": 1
+        },
+        "240": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "19.393055555555556",
+            "angle": 135.94736842105266,
+            "size": 383356,
+            "rec": 0.15490463734010984,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 1
+        },
+        "245": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.458333333333334",
+            "angle": 159.42434210526318,
+            "size": 2117,
+            "rec": 0.8094564503371774,
+            "name": "bag",
+            "accessibility": 0,
+            "group": 1
+        },
+        "248": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "24.35",
+            "angle": 122.65460526315792,
+            "size": 5546,
+            "rec": 0.22465616988986148,
+            "name": "sign",
+            "accessibility": 0,
+            "group": 1
+        },
+        "254": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "18.96201814058957",
+            "angle": 123.86842105263156,
+            "size": 187740,
+            "rec": 0.31699322387935824,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 1
+        },
+        "269": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.572826086956521",
+            "angle": 156.2861842105263,
+            "size": 33579,
+            "rec": 0.4003069748923528,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "270": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "6.362549019607843",
+            "angle": 168.51315789473682,
+            "size": 181148,
+            "rec": 0.34803490298487194,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 1
+        },
+        "272": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "13.67004048582996",
+            "angle": 149.44736842105266,
+            "size": 34884,
+            "rec": 0.8778088525200198,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "277": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.46329365079365",
+            "angle": 135.02960526315792,
+            "size": 36322,
+            "rec": 0.4761971938056788,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "280": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "23.61111111111111",
+            "angle": 165.70065789473682,
+            "size": 1250,
+            "rec": 0.9467411961209801,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "284": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "15.886422493525712",
+            "angle": 144.68092105263156,
+            "size": 189384,
+            "rec": 0.18155378484170792,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "285": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "13.744186046511627",
+            "angle": 125.73355263157896,
+            "size": 28589,
+            "rec": 0.03291763489214938,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "286": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "23.571428571428573",
+            "angle": 153.79934210526318,
+            "size": 3182,
+            "rec": 0.3064796389454497,
+            "name": "person",
+            "accessibility": 0,
+            "group": 1
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "15": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                2,
+                8
+            ],
+            "weight": "0.13203503",
+            "name": "to be done"
+        },
+        "16": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                2,
+                63
+            ],
+            "weight": "0.0040291827",
+            "name": "to be done"
+        },
+        "17": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                2,
+                67
+            ],
+            "weight": "0.007630695",
+            "name": "to be done"
+        },
+        "18": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                2,
+                69
+            ],
+            "weight": "0.0077195726",
+            "name": "to be done"
+        },
+        "20": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                3,
+                8
+            ],
+            "weight": "0.36490938",
+            "name": "to be done"
+        },
+        "21": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                3,
+                53
+            ],
+            "weight": "0.21661177",
+            "name": "to be done"
+        },
+        "46": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                21
+            ],
+            "weight": "0.0028386703",
+            "name": "to be done"
+        },
+        "47": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                23
+            ],
+            "weight": "0.2202763",
+            "name": "to be done"
+        },
+        "48": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                31
+            ],
+            "weight": "0.0032690961",
+            "name": "to be done"
+        },
+        "50": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                37
+            ],
+            "weight": "0.10807013",
+            "name": "to be done"
+        },
+        "54": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                52
+            ],
+            "weight": "0.010340432",
+            "name": "to be done"
+        },
+        "55": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                53
+            ],
+            "weight": "0.06824084",
+            "name": "to be done"
+        },
+        "56": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                55
+            ],
+            "weight": "0.009181211",
+            "name": "to be done"
+        },
+        "57": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                60
+            ],
+            "weight": "0.010148144",
+            "name": "to be done"
+        },
+        "58": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                63
+            ],
+            "weight": "0.0007588582",
+            "name": "to be done"
+        },
+        "60": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                67
+            ],
+            "weight": "0.056024034",
+            "name": "to be done"
+        },
+        "61": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                68
+            ],
+            "weight": "0.009460134",
+            "name": "to be done"
+        },
+        "62": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                8,
+                69
+            ],
+            "weight": "0.0018920469",
+            "name": "to be done"
+        },
+        "95": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                21,
+                23
+            ],
+            "weight": "0.011633756",
+            "name": "to be done"
+        },
+        "96": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                21,
+                37
+            ],
+            "weight": "0.0038787373",
+            "name": "to be done"
+        },
+        "97": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                21,
+                67
+            ],
+            "weight": "0.0020639515",
+            "name": "to be done"
+        },
+        "98": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                21,
+                68
+            ],
+            "weight": "0.17435321",
+            "name": "to be done"
+        },
+        "100": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                23,
+                31
+            ],
+            "weight": "0.012077728",
+            "name": "to be done"
+        },
+        "101": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                23,
+                37
+            ],
+            "weight": "0.26704678",
+            "name": "to be done"
+        },
+        "102": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                23,
+                55
+            ],
+            "weight": "0.017115675",
+            "name": "to be done"
+        },
+        "103": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                23,
+                60
+            ],
+            "weight": "0.03178365",
+            "name": "to be done"
+        },
+        "104": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                23,
+                67
+            ],
+            "weight": "0.098760694",
+            "name": "to be done"
+        },
+        "105": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                23,
+                68
+            ],
+            "weight": "0.0305143",
+            "name": "to be done"
+        },
+        "130": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                28,
+                52
+            ],
+            "weight": "0.05235849",
+            "name": "to be done"
+        },
+        "131": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                28,
+                67
+            ],
+            "weight": "0.011728594",
+            "name": "to be done"
+        },
+        "134": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                31,
+                37
+            ],
+            "weight": "0.030451981",
+            "name": "to be done"
+        },
+        "135": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                31,
+                68
+            ],
+            "weight": "0.024367554",
+            "name": "to be done"
+        },
+        "153": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                37,
+                60
+            ],
+            "weight": "0.00036610413",
+            "name": "to be done"
+        },
+        "154": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                37,
+                67
+            ],
+            "weight": "0.014881833",
+            "name": "to be done"
+        },
+        "155": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                37,
+                68
+            ],
+            "weight": "0.025396856",
+            "name": "to be done"
+        },
+        "182": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                52,
+                55
+            ],
+            "weight": "0.015907168",
+            "name": "to be done"
+        },
+        "183": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                52,
+                67
+            ],
+            "weight": "0.17977956",
+            "name": "to be done"
+        },
+        "184": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                52,
+                69
+            ],
+            "weight": "0.020033853",
+            "name": "to be done"
+        },
+        "187": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                55,
+                67
+            ],
+            "weight": "0.17115508",
+            "name": "to be done"
+        },
+        "188": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                55,
+                69
+            ],
+            "weight": "0.0010255871",
+            "name": "to be done"
+        },
+        "195": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                60,
+                67
+            ],
+            "weight": "0.19197905",
+            "name": "to be done"
+        },
+        "209": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                67,
+                68
+            ],
+            "weight": "0.050173685",
+            "name": "to be done"
+        },
+        "210": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                67,
+                69
+            ],
+            "weight": "0.008156726",
+            "name": "to be done"
+        }
+    },
+    "scene_102.json": {
+        "261": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.348484848484848",
+            "angle": 175.55921052631578,
+            "size": 14472,
+            "rec": 0.47298025512722797,
+            "name": "chair",
+            "accessibility": 0,
+            "group": 2
+        },
+        "282": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.071794871794872",
+            "angle": 176.89144736842104,
+            "size": 13528,
+            "rec": 0.9006832170873778,
+            "name": "person",
+            "accessibility": 0,
+            "group": 2
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "167": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                44,
+                65
+            ],
+            "weight": "0.49868864",
+            "name": "to be done"
+        }
+    },
+    "scene_103.json": {
+        "224": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "7.449180327868852",
+            "angle": -50.18092105263159,
+            "size": 138600,
+            "rec": 0.4308332311606794,
+            "name": "bench",
+            "accessibility": 0,
+            "group": 3
+        },
+        "233": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.208116545265349",
+            "angle": -77.98026315789474,
+            "size": 204050,
+            "rec": 0.48847038426501577,
+            "name": "bench",
+            "accessibility": 0,
+            "group": 3
+        },
+        "247": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "2.505625",
+            "angle": -90.82894736842105,
+            "size": 512050,
+            "rec": 0.6267766181204468,
+            "name": "person",
+            "accessibility": 0,
+            "group": 3
+        },
+        "258": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "6.399478260869565",
+            "angle": -34.54934210526315,
+            "size": 404935,
+            "rec": 0.8413091529005282,
+            "name": "shadow",
+            "accessibility": 0,
+            "group": 3
+        },
+        "271": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "2.813251919472825",
+            "angle": -155.45723684210526,
+            "size": 586932,
+            "rec": 0.36530779859338114,
+            "name": "man",
+            "accessibility": 0,
+            "group": 3
+        },
+        "289": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "3.4250094661113213",
+            "angle": -109.80592105263158,
+            "size": 1860375,
+            "rec": 0.8172942362558635,
+            "name": "person",
+            "accessibility": 0,
+            "group": 3
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "43": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                7,
+                41
+            ],
+            "weight": "0.17275374",
+            "name": "to be done"
+        },
+        "44": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                7,
+                72
+            ],
+            "weight": "0.051882282",
+            "name": "to be done"
+        },
+        "86": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                16,
+                30
+            ],
+            "weight": "0.1073483",
+            "name": "to be done"
+        },
+        "87": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                16,
+                72
+            ],
+            "weight": "0.11023242",
+            "name": "to be done"
+        },
+        "133": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                30,
+                72
+            ],
+            "weight": "0.26590028",
+            "name": "to be done"
+        },
+        "161": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                41,
+                72
+            ],
+            "weight": "0.058419567",
+            "name": "to be done"
+        },
+        "186": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                54,
+                72
+            ],
+            "weight": "0.24999145",
+            "name": "to be done"
+        }
+    },
+    "scene_104.json": {
+        "241": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "14.034749034749035",
+            "angle": -64.59868421052632,
+            "size": 17958,
+            "rec": 0.21121477846875691,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 4
+        },
+        "249": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "6.289210233592881",
+            "angle": -115.3125,
+            "size": 30408,
+            "rec": 0.6314888215891578,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 4
+        },
+        "259": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.364661654135338",
+            "angle": -79.01644736842105,
+            "size": 9605,
+            "rec": 0.28932022113304956,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 4
+        },
+        "283": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "11.41566265060241",
+            "angle": -91.65789473684211,
+            "size": 268632,
+            "rec": 0.59949696471625,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 4
+        },
+        "292": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "13.849802371541502",
+            "angle": -67.91447368421052,
+            "size": 17680,
+            "rec": 0.4732790603380719,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 4
+        },
+        "296": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "11.449074074074074",
+            "angle": -93.3157894736842,
+            "size": 7344,
+            "rec": 0.23770268188776988,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 4
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "107": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                24,
+                66
+            ],
+            "weight": "0.05949419",
+            "name": "to be done"
+        },
+        "108": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                24,
+                75
+            ],
+            "weight": "0.2429548",
+            "name": "to be done"
+        },
+        "137": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                32,
+                66
+            ],
+            "weight": "0.10788382",
+            "name": "to be done"
+        },
+        "163": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                42,
+                66
+            ],
+            "weight": "0.03652308",
+            "name": "to be done"
+        },
+        "207": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                66,
+                75
+            ],
+            "weight": "0.06687534",
+            "name": "to be done"
+        },
+        "208": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                66,
+                79
+            ],
+            "weight": "0.028015869",
+            "name": "to be done"
+        }
+    },
+    "scene_105.json": {
+        "226": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "19.62582508250825",
+            "angle": 76.91447368421052,
+            "size": 424580,
+            "rec": 0.789026634450862,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "227": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "7.427597402597403",
+            "angle": 100.83552631578948,
+            "size": 326500,
+            "rec": 0.713340653693303,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "230": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "20.566666666666666",
+            "angle": 29.33881578947367,
+            "size": 2419,
+            "rec": 0.49811645655515124,
+            "name": "sign",
+            "accessibility": 0,
+            "group": 5
+        },
+        "236": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.950850221290473",
+            "angle": 28.27302631578948,
+            "size": 903340,
+            "rec": 0.9440107228606953,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "237": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "5.815555555555555",
+            "angle": 78.21710526315792,
+            "size": 570312,
+            "rec": 0.4400020305250374,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "242": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "11.149058052323864",
+            "angle": 55.59868421052633,
+            "size": 2987062,
+            "rec": 0.4179658688381237,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "252": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "22.8093567251462",
+            "angle": 98.61513157894734,
+            "size": 422669,
+            "rec": 0.6361740159908723,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "253": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "35.40151515151515",
+            "angle": 82.92434210526318,
+            "size": 46374,
+            "rec": 0.5795990333988982,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "256": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "31.222689075630253",
+            "angle": 76.5,
+            "size": 8160,
+            "rec": 0.4232616840979274,
+            "name": "bush",
+            "accessibility": 0,
+            "group": 5
+        },
+        "260": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "21.965034965034967",
+            "angle": 113.625,
+            "size": 9796,
+            "rec": 0.6754012526135293,
+            "name": "sign",
+            "accessibility": 0,
+            "group": 5
+        },
+        "262": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "15.864678423236514",
+            "angle": 103.5,
+            "size": 680664,
+            "rec": 0.08005029262912067,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "264": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "21.71390374331551",
+            "angle": 110.45723684210526,
+            "size": 12969,
+            "rec": 0.7897842128535073,
+            "name": "sign",
+            "accessibility": 0,
+            "group": 5
+        },
+        "266": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "11.815172413793103",
+            "angle": 40.41118421052633,
+            "size": 124081,
+            "rec": 0.4772579483747943,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "268": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "18.33758865248227",
+            "angle": 50.41776315789474,
+            "size": 101722,
+            "rec": 0.1801385039714447,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "273": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "7.568053415511042",
+            "angle": 30.52302631578948,
+            "size": 67743,
+            "rec": 0.18295207745702513,
+            "name": "girl",
+            "accessibility": 0,
+            "group": 5
+        },
+        "276": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "10.780224345658496",
+            "angle": 12.25657894736841,
+            "size": 170430,
+            "rec": 0.5055481254563788,
+            "name": "shadow",
+            "accessibility": 0,
+            "group": 5
+        },
+        "278": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "24.64",
+            "angle": 87.51315789473682,
+            "size": 8352,
+            "rec": 0.8447676560029608,
+            "name": "man",
+            "accessibility": 0,
+            "group": 5
+        },
+        "279": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "24.56875",
+            "angle": 90.50328947368422,
+            "size": 5117,
+            "rec": 0.1180424552232463,
+            "name": "person",
+            "accessibility": 0,
+            "group": 5
+        },
+        "281": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "14.170833333333333",
+            "angle": 86.74342105263156,
+            "size": 270180,
+            "rec": 0.6833199108015705,
+            "name": "shadow",
+            "accessibility": 0,
+            "group": 5
+        },
+        "290": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "27.712915601023017",
+            "angle": 88.43092105263156,
+            "size": 55550,
+            "rec": 0.5552888420522043,
+            "name": "sidewalk",
+            "accessibility": 0,
+            "group": 5
+        },
+        "291": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "8.6267217630854",
+            "angle": -8.85197368421052,
+            "size": 26004,
+            "rec": 0.026627782467428585,
+            "name": "door",
+            "accessibility": 0,
+            "group": 5
+        },
+        "293": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "16.617861142217244",
+            "angle": 63.5625,
+            "size": 126893,
+            "rec": 0.8898744031342471,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "294": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "40.90317812269032",
+            "angle": 95.35855263157896,
+            "size": 46899,
+            "rec": 0.7784706019380865,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 5
+        },
+        "297": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "8.703515880710302",
+            "angle": 68.41776315789474,
+            "size": 4253569,
+            "rec": 0.4805309875954554,
+            "name": "shadow",
+            "accessibility": 0,
+            "group": 5
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "64": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                25
+            ],
+            "weight": "0.1426404",
+            "name": "to be done"
+        },
+        "65": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                35
+            ],
+            "weight": "0.20168811",
+            "name": "to be done"
+        },
+        "66": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                36
+            ],
+            "weight": "0.11037394",
+            "name": "to be done"
+        },
+        "67": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                39
+            ],
+            "weight": "0.01965848",
+            "name": "to be done"
+        },
+        "68": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                45
+            ],
+            "weight": "0.060007136",
+            "name": "to be done"
+        },
+        "69": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                61
+            ],
+            "weight": "0.018884087",
+            "name": "to be done"
+        },
+        "70": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                62
+            ],
+            "weight": "0.010763994",
+            "name": "to be done"
+        },
+        "71": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                64
+            ],
+            "weight": "0.0017273149",
+            "name": "to be done"
+        },
+        "72": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                73
+            ],
+            "weight": "0.06638445",
+            "name": "to be done"
+        },
+        "73": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                76
+            ],
+            "weight": "0.2343914",
+            "name": "to be done"
+        },
+        "74": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                77
+            ],
+            "weight": "0.046013325",
+            "name": "to be done"
+        },
+        "75": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                9,
+                80
+            ],
+            "weight": "0.0064433557",
+            "name": "to be done"
+        },
+        "76": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                10,
+                20
+            ],
+            "weight": "0.19628847",
+            "name": "to be done"
+        },
+        "77": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                10,
+                25
+            ],
+            "weight": "0.07740385",
+            "name": "to be done"
+        },
+        "78": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                10,
+                45
+            ],
+            "weight": "0.39179486",
+            "name": "to be done"
+        },
+        "82": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                13,
+                25
+            ],
+            "weight": "0.00084366684",
+            "name": "to be done"
+        },
+        "92": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                19,
+                25
+            ],
+            "weight": "0.27708042",
+            "name": "to be done"
+        },
+        "93": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                20,
+                25
+            ],
+            "weight": "0.19153133",
+            "name": "to be done"
+        },
+        "94": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                20,
+                45
+            ],
+            "weight": "0.093738034",
+            "name": "to be done"
+        },
+        "110": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                35
+            ],
+            "weight": "0.10050928",
+            "name": "to be done"
+        },
+        "111": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                36
+            ],
+            "weight": "0.015674565",
+            "name": "to be done"
+        },
+        "113": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                39
+            ],
+            "weight": "0.0027932166",
+            "name": "to be done"
+        },
+        "114": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                45
+            ],
+            "weight": "0.13224973",
+            "name": "to be done"
+        },
+        "115": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                47
+            ],
+            "weight": "2.6667101e-05",
+            "name": "to be done"
+        },
+        "116": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                49
+            ],
+            "weight": "0.041798614",
+            "name": "to be done"
+        },
+        "118": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                51
+            ],
+            "weight": "0.03431182",
+            "name": "to be done"
+        },
+        "119": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                56
+            ],
+            "weight": "0.006262614",
+            "name": "to be done"
+        },
+        "120": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                59
+            ],
+            "weight": "0.014905895",
+            "name": "to be done"
+        },
+        "121": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                61
+            ],
+            "weight": "0.002864213",
+            "name": "to be done"
+        },
+        "122": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                62
+            ],
+            "weight": "0.0017677196",
+            "name": "to be done"
+        },
+        "123": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                64
+            ],
+            "weight": "0.008439051",
+            "name": "to be done"
+        },
+        "124": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                73
+            ],
+            "weight": "0.01416749",
+            "name": "to be done"
+        },
+        "125": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                76
+            ],
+            "weight": "0.042755608",
+            "name": "to be done"
+        },
+        "126": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                77
+            ],
+            "weight": "0.015849328",
+            "name": "to be done"
+        },
+        "127": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                25,
+                80
+            ],
+            "weight": "0.020026129",
+            "name": "to be done"
+        },
+        "141": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                36
+            ],
+            "weight": "0.05376873",
+            "name": "to be done"
+        },
+        "142": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                43
+            ],
+            "weight": "0.016823024",
+            "name": "to be done"
+        },
+        "143": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                45
+            ],
+            "weight": "0.4267317",
+            "name": "to be done"
+        },
+        "144": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                47
+            ],
+            "weight": "0.030515354",
+            "name": "to be done"
+        },
+        "145": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                61
+            ],
+            "weight": "0.020250151",
+            "name": "to be done"
+        },
+        "146": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                62
+            ],
+            "weight": "0.0124968635",
+            "name": "to be done"
+        },
+        "147": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                64
+            ],
+            "weight": "0.067463614",
+            "name": "to be done"
+        },
+        "148": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                73
+            ],
+            "weight": "0.10976283",
+            "name": "to be done"
+        },
+        "149": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                77
+            ],
+            "weight": "0.11210898",
+            "name": "to be done"
+        },
+        "150": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                35,
+                80
+            ],
+            "weight": "0.01506897",
+            "name": "to be done"
+        },
+        "151": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                36,
+                61
+            ],
+            "weight": "0.0045154183",
+            "name": "to be done"
+        },
+        "157": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                39,
+                80
+            ],
+            "weight": "0.0006287786",
+            "name": "to be done"
+        },
+        "164": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                43,
+                45
+            ],
+            "weight": "0.014721292",
+            "name": "to be done"
+        },
+        "165": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                43,
+                47
+            ],
+            "weight": "0.05721451",
+            "name": "to be done"
+        },
+        "166": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                43,
+                80
+            ],
+            "weight": "0.0006654102",
+            "name": "to be done"
+        },
+        "168": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                45,
+                47
+            ],
+            "weight": "0.017157111",
+            "name": "to be done"
+        },
+        "169": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                45,
+                62
+            ],
+            "weight": "0.007048655",
+            "name": "to be done"
+        },
+        "170": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                45,
+                64
+            ],
+            "weight": "0.03261245",
+            "name": "to be done"
+        },
+        "171": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                45,
+                73
+            ],
+            "weight": "0.032409064",
+            "name": "to be done"
+        },
+        "172": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                45,
+                77
+            ],
+            "weight": "0.069588535",
+            "name": "to be done"
+        },
+        "173": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                45,
+                80
+            ],
+            "weight": "0.011489934",
+            "name": "to be done"
+        },
+        "175": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                47,
+                64
+            ],
+            "weight": "0.030948592",
+            "name": "to be done"
+        },
+        "176": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                47,
+                80
+            ],
+            "weight": "0.0031034448",
+            "name": "to be done"
+        },
+        "178": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                49,
+                51
+            ],
+            "weight": "0.0151871415",
+            "name": "to be done"
+        },
+        "179": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                49,
+                56
+            ],
+            "weight": "0.007277959",
+            "name": "to be done"
+        },
+        "180": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                49,
+                80
+            ],
+            "weight": "0.003156828",
+            "name": "to be done"
+        },
+        "190": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                56,
+                59
+            ],
+            "weight": "0.051828984",
+            "name": "to be done"
+        },
+        "191": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                56,
+                80
+            ],
+            "weight": "0.015269051",
+            "name": "to be done"
+        },
+        "194": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                59,
+                80
+            ],
+            "weight": "0.035812087",
+            "name": "to be done"
+        },
+        "197": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                61,
+                62
+            ],
+            "weight": "0.008460617",
+            "name": "to be done"
+        },
+        "198": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                61,
+                64
+            ],
+            "weight": "0.0023355153",
+            "name": "to be done"
+        },
+        "199": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                61,
+                73
+            ],
+            "weight": "0.1387889",
+            "name": "to be done"
+        },
+        "200": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                61,
+                80
+            ],
+            "weight": "0.0008174355",
+            "name": "to be done"
+        },
+        "201": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                62,
+                64
+            ],
+            "weight": "0.0028851933",
+            "name": "to be done"
+        },
+        "202": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                62,
+                73
+            ],
+            "weight": "0.09532923",
+            "name": "to be done"
+        },
+        "203": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                62,
+                77
+            ],
+            "weight": "0.020321695",
+            "name": "to be done"
+        },
+        "204": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                62,
+                80
+            ],
+            "weight": "0.0006823658",
+            "name": "to be done"
+        },
+        "205": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                64,
+                73
+            ],
+            "weight": "0.07466892",
+            "name": "to be done"
+        },
+        "206": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                64,
+                80
+            ],
+            "weight": "0.06382705",
+            "name": "to be done"
+        },
+        "214": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                73,
+                77
+            ],
+            "weight": "0.05723249",
+            "name": "to be done"
+        },
+        "215": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                73,
+                80
+            ],
+            "weight": "0.008396441",
+            "name": "to be done"
+        },
+        "216": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                74,
+                80
+            ],
+            "weight": "0.0061915168",
+            "name": "to be done"
+        }
+    },
+    "scene_106.json": {
+        "229": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "9.772079772079772",
+            "angle": -47.07236842105263,
+            "size": 24764,
+            "rec": 0.15634128305570338,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 6
+        },
+        "231": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "12.353896103896103",
+            "angle": -55.6875,
+            "size": 32899,
+            "rec": 0.22692393906991437,
+            "name": "building",
+            "accessibility": 0,
+            "group": 6
+        },
+        "246": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "13.107266435986158",
+            "angle": -58.618421052631575,
+            "size": 20700,
+            "rec": 0.5188911619265378,
+            "name": "tree",
+            "accessibility": 0,
+            "group": 6
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "79": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                12,
+                14
+            ],
+            "weight": "0.104845665",
+            "name": "to be done"
+        },
+        "83": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                14,
+                29
+            ],
+            "weight": "0.45653415",
+            "name": "to be done"
+        }
+    },
+    "scene_107.json": {
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        }
+    },
+    "scene_108.json": {
+        "232": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "8.0",
+            "angle": 29.72368421052633,
+            "size": 11560,
+            "rec": 0.868561774046943,
+            "name": "person",
+            "accessibility": 0,
+            "group": 8
+        },
+        "250": {
+            "isValid": "True",
+            "type": 3,
+            "depth": "8.0",
+            "angle": 29.33881578947367,
+            "size": 4914,
+            "rec": 0.8965098509649311,
+            "name": "person",
+            "accessibility": 0,
+            "group": 8
+        },
+        "9999": {
+            "isValid": "True",
+            "type": 3,
+            "depth": 0,
+            "angle": 0,
+            "size": 4253569,
+            "rec": 9999,
+            "name": "self",
+            "accessibility": 9999
+        },
+        "84": {
+            "isValid": "False",
+            "type": 4,
+            "source": [
+                15,
+                33
+            ],
+            "weight": "0.44508773",
+            "name": "to be done"
+        }
+    }
+}

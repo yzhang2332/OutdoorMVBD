@@ -1,0 +1,26 @@
+{
+    "_data": [
+        {
+            "isValid": true,
+            "type": 3,
+            "depth": "23.61111111111111",
+            "angle": 165.70065789473682,
+            "size": 1250,
+            "rec": 0.859741149107493,
+            "name": "person",
+            "accessibility": 0,
+            "group": 10,
+            "id": 280,
+            "cx": -16.0,
+            "cy": -4.0781532051122555,
+            "x0": 7
+        }
+    ],
+    "mode": 1,
+    "orientation_agent": 0,
+    "orientation_map": 90.0,
+    "point_size": 5,
+    "scale": 1,
+    "x0": 16.0,
+    "y0": 4.0781532051122555
+}

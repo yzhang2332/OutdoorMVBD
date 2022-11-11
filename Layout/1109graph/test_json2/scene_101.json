@@ -1,0 +1,26 @@
+{
+    "_data": [
+        {
+            "isValid": true,
+            "type": 3,
+            "depth": "5.3652173913043475",
+            "angle": -140.98026315789474,
+            "size": 81360,
+            "rec": 0.8893339903345255,
+            "name": "flower",
+            "accessibility": 0,
+            "group": 1,
+            "id": 228,
+            "cx": 15.999999999999998,
+            "cy": 12.965672854310936,
+            "x0": 7
+        }
+    ],
+    "mode": 1,
+    "orientation_agent": 0,
+    "orientation_map": 90.0,
+    "point_size": 5,
+    "scale": 1,
+    "x0": -16.0,
+    "y0": -12.965672854310936
+}

@@ -1,0 +1,26 @@
+{
+    "_data": [
+        {
+            "isValid": true,
+            "type": 3,
+            "depth": "12.353896103896103",
+            "angle": -55.6875,
+            "size": 32899,
+            "rec": 0.7925395640470091,
+            "name": "building",
+            "accessibility": 0,
+            "group": 3,
+            "id": 231,
+            "cx": -14.331943146932748,
+            "cy": 21.0,
+            "x0": 7
+        }
+    ],
+    "mode": 1,
+    "orientation_agent": 0,
+    "orientation_map": 90.0,
+    "point_size": 5,
+    "scale": 1,
+    "x0": 14.331943146932748,
+    "y0": -21.0
+}
