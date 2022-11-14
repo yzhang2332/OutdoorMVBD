@@ -22,6 +22,9 @@ namespace Metec.MVBDClient
         bool flashing_show;
         public SendVoice send_voice_handler;
 
+        public int current_frame = 1;
+        public bool has_updated_frame = false;
+
         string[] scene_paths;
 
         public FormDrawing()
@@ -933,6 +936,5 @@ namespace Metec.MVBDClient
             txtPath.Text = fileName;
             btnLoadScene_Click(null, null);
         }
-
     }
 }
