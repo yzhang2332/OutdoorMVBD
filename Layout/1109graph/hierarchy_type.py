@@ -27,7 +27,8 @@ def grouping_visualization(cluster, node_id, all_pos, G):
     node_color = []
     for i in range(0, len(cluster)):
         node_color.append(color[int(cluster[node_id[i]])])
-    pos = general_attributes.layout(pos, G, 5, 2, 1)
+    fix_node = [node_id[-1]]
+    pos = general_attributes.layout(pos, G, 5, 2, fix_node)
     nx.draw(G, pos=pos, node_size=100, with_labels=True, node_color=node_color)
     plt.xlim(-26, 26)
     plt.ylim(-21, 21)
@@ -81,36 +82,56 @@ def layer(data, cluster, node_id, edge_id):
     # else:
     #     for i in range(len(candidate_node)):
     #         layer_data[candidate_node[i][0]] = copy.deepcopy(data_update[str(candidate_node[i][0])])
+    candidate_node_list = []
     for i in range(len(candidate_node)):
+        candidate_node_list.append(candidate_node[i][0])
         layer_data[int(candidate_node[i][0])] = copy.deepcopy(data_update[str(candidate_node[i][0])])
+        data_update[str(candidate_node[i][0])]["first_rec"] = 1
     # print(layer_data.keys())
     # print(layer_data)
+    for i in range(0, len(node_id)):
+        if node_id[i] in candidate_node_list:
+            pass
+        else:
+            data_update[str(node_id[i])]["first_rec"] = 0
+    # print("00000000000000", data_update)
 
     # search for edge
     search_keys = list(layer_data.keys())
     # print(search_keys)
     # print(data_update)
     for i in range(0, len(edge_id)):  # find related edges
-        source = int(data_update[str(edge_id[i])].get("source")[0])+217
-        target = int(data_update[str(edge_id[i])].get("source")[1])+217
+        source = int(data_update[str(edge_id[i])].get("source")[0])
+        target = int(data_update[str(edge_id[i])].get("source")[1])
         # print(source, target)
         if (source in search_keys) and (target in search_keys):
             # print(edge_id[i])
             layer_data[int(edge_id[i])] = copy.deepcopy(data_update[str(edge_id[i])])
-    # print(layer_data)
-    return layer_data
+    # print("layer data", layer_data)
+    return layer_data, data_update
 
 
-def hierarchy(node_id, add_edge, position, r, n, it, fix):
+def hierarchy(all_data, node_id, add_edge, position, r, n, it, layer):
+    # print(layer)
     G = general_attributes.init_graph(node_id, add_edge)
     # print(nx.nodes(G))
     # print(nx.edges(G))
     pos = general_attributes.scale(position)
-    render_pos = general_attributes.layout(pos, G, n, it, fix)
+    if layer == 1:
+        # print(node_id)
+        fix_node = [9999]
+    elif layer == 2:
+        fix_node = None
+        # print(node_id)
+        for i in range(0, len(node_id)):
+            if(all_data[str(node_id[i])]["first_rec"]) == 1 and node_id[i] != 9999:
+                fix_node = [node_id[i]]
+                # print("fix", fix_node)
+    render_pos = general_attributes.layout(pos, G, n, it, fix_node)
     nx.draw(G, pos=render_pos, node_size=r, with_labels=True)
     plt.xlim(-26, 26)
     plt.ylim(-21, 21)
-    # plt.show()
+    plt.show()
     return render_pos
 
 
@@ -123,10 +144,10 @@ def read_new(data):
     for i in range(0, len(all_keys)):
         if data[all_keys[i]]["isValid"] == "False":  # edge
             edge_id.append(int(all_keys[i]))
-            source = int(data[all_keys[i]].get("source")[0])+217
-            target = int(data[all_keys[i]].get("source")[1])+217
+            source = int(data[all_keys[i]].get("source")[0])
+            target = int(data[all_keys[i]].get("source")[1])
             weight = float(data[all_keys[i]].get("weight"))
-            relation = (source, target, {"weight": weight/3})
+            relation = (source, target, {"weight": weight/100})
             all_edge.append(relation)
 
         else:  # node
@@ -156,11 +177,28 @@ def read_new(data):
 
 
 def to_render_json1(data, render_pos, name):
+    # print("render data", data)
     search_list = list(render_pos.keys())
+    data_keys = list(data.keys())
     # print(search_list)
     # print(render_pos)
+
+    print("after", data)
+    for i in range(0, len(data_keys)):
+        data[data_keys[i]]["id"] = int(data_keys[i])
+        if data[data_keys[i]]["type"] == 4:
+            source_0 = np.split(render_pos[data[data_keys[i]]["source"][0]], 2)[1].tolist()[0]
+            source_1 = -np.split(render_pos[data[data_keys[i]]["source"][0]], 2)[0].tolist()[0]
+            target_0 = np.split(render_pos[data[data_keys[i]]["source"][1]], 2)[1].tolist()[0]
+            target_1 = -np.split(render_pos[data[data_keys[i]]["source"][1]], 2)[0].tolist()[0]
+            # print(source_0, source_1, target_0, target_1)
+            data[data_keys[i]]["isValid"] = False
+            data[data_keys[i]]["source"] = [data[data_keys[i]]["source"][0], data[data_keys[i]]["source"][1]]
+            data[data_keys[i]]["x0"] = source_0
+            data[data_keys[i]]["y0"] = source_1
+            data[data_keys[i]]["x1"] = target_0
+            data[data_keys[i]]["y1"] = target_1
     for i in range(0, len(search_list)):
-        data[search_list[i]]["id"] = search_list[i]
         data[search_list[i]]["cx"] = np.split(render_pos[search_list[i]], 2)[1].tolist()[0]
         data[search_list[i]]["cy"] = -np.split(render_pos[search_list[i]], 2)[0].tolist()[0]
         data[search_list[i]]["x0"] = 5
@@ -170,14 +208,18 @@ def to_render_json1(data, render_pos, name):
             # data[search_list[i]]["semantic_label"] = None
             pass
     # print(data)
+    data= dict([(k,data[k]) for k in sorted(data.keys())])
+    data_keys = sorted(data_keys)
+    # print(data_keys)
     data_list = []
-    for i in range(0, len(search_list)):
-        if search_list[i] != 9999:
+    for i in range(0, len(data_keys)):
+        if data_keys[i] != 9999:
             # print(data[search_list[i]])
-            data_list.append(data[search_list[i]])
+            data_list.append(data[data_keys[i]])
     # print(data_list)
     modified_dict = {}
     modified_dict["_data"] = data_list
+    print(modified_dict)
     modified_dict["mode"] = 1
     modified_dict["orientation_agent"] = 0
     modified_dict["orientation_map"] = 90.0
@@ -187,7 +229,7 @@ def to_render_json1(data, render_pos, name):
     modified_dict["y0"] = 0
     # print(modified_dict)
     json_str = json.dumps(modified_dict, indent=4)
-    with open(name,'w') as json_file:
+    with open(name, 'w') as json_file:
         json_file.write(json_str)
 
 
@@ -200,13 +242,13 @@ def to_render_json2(data, render_pos, name):
         data[search_list[i]]["id"] = search_list[i]
         # print(data[search_list[i]])
         if data[search_list[i]]["type"] == 4:
-            source_0 = np.split(render_pos[data[search_list[i]]["source"][0]+217], 2)[1].tolist()[0]
-            source_1 = -np.split(render_pos[data[search_list[i]]["source"][0]+217], 2)[0].tolist()[0]
-            target_0 = np.split(render_pos[data[search_list[i]]["source"][1]+217], 2)[1].tolist()[0]
-            target_1 = -np.split(render_pos[data[search_list[i]]["source"][1]+217], 2)[0].tolist()[0]
+            source_0 = np.split(render_pos[data[search_list[i]]["source"][0]], 2)[1].tolist()[0]
+            source_1 = -np.split(render_pos[data[search_list[i]]["source"][0]], 2)[0].tolist()[0]
+            target_0 = np.split(render_pos[data[search_list[i]]["source"][1]], 2)[1].tolist()[0]
+            target_1 = -np.split(render_pos[data[search_list[i]]["source"][1]], 2)[0].tolist()[0]
             # print(source_0, source_1, target_0, target_1)
             data[search_list[i]]["isValid"] = False
-            data[search_list[i]]["source"] = [data[search_list[i]]["source"][0]+217, data[search_list[i]]["source"][1]+217]
+            data[search_list[i]]["source"] = [data[search_list[i]]["source"][0], data[search_list[i]]["source"][1]]
             data[search_list[i]]["x0"] = source_0
             data[search_list[i]]["y0"] = source_1
             data[search_list[i]]["x1"] = target_0
@@ -279,8 +321,8 @@ def group_layer2_data(data, cluster, edge_id):
                                               "accessibility": 9999}
 
         for j in range(0, len(edge_id)):  # find related edges
-            source = int(data[str(edge_id[j])].get("source")[0])+217
-            target = int(data[str(edge_id[j])].get("source")[1])+217
+            source = int(data[str(edge_id[j])].get("source")[0])
+            target = int(data[str(edge_id[j])].get("source")[1])
         # print(source, target)
             if (source in search_keys) and (target in search_keys):
                 # print(edge_id[i])
@@ -304,7 +346,8 @@ def group_layer2_data(data, cluster, edge_id):
             # init_graph
             G = general_attributes.init_graph(part_node_id, part_all_edge)
             # hierarchy render pos
-            part_render_pos = hierarchy(part_node_id, part_all_edge, part_all_pos, 1000, 5, 5, 0)
+            # print("2222222222222222", data)
+            part_render_pos = hierarchy(data, part_node_id, part_all_edge, part_all_pos, 1000, 1, 15, 2)
             # to render json
             # print(this_group)
             key_list = list(this_group.keys())
@@ -322,18 +365,19 @@ if __name__ == "__main__":
     all_data, edge_id, all_edge, node_id, all_pos, all_rec = general_attributes.read_all()
     G = general_attributes.init_graph(node_id, all_edge)
     cluster, groups = grouping(G)
-    # grouping_visualization(cluster, node_id, all_pos, G)
+    grouping_visualization(cluster, node_id, all_pos, G)
 
     #  add group number
     all_data = filter_data(all_data, node_id, cluster)
 
     # first layer data
-    layer1_data = layer(all_data, cluster, node_id, edge_id)
+    layer1_data, all_data = layer(all_data, cluster, node_id, edge_id)
     # print(layer1_data)
+    # print(all_data)
     layer_edge_id, layer_edge, layer_node_id, layer_pos = read_new(layer1_data)
-    render_pos = hierarchy(layer_node_id, layer_edge, layer_pos, 1000, 5, 5, 1)
+    # print("11111111111", all_data)
+    render_pos = hierarchy(all_data, layer_node_id, layer_edge, layer_pos, 1000, 5, 5, 1)
     to_render_json1(layer1_data, render_pos, "scene_1.json")
-
 
     group_layer2_data(all_data, cluster, edge_id)
     
