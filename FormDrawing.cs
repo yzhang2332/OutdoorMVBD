@@ -160,12 +160,13 @@ namespace Metec.MVBDClient
                 string label = _scene.get_semantic_label(PARAMS.VOICE_FORWARD, chkChineseSpeech.Checked);
                 send_voice(label);
                 string fileName = string.Format("scene_{0}.json", file_suffix);
+                
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
             }
             else if (file_suffix < 0)
             {
-                file_suffix = _scene.current_suffix / 10;
+                file_suffix = _scene.current_suffix / 100;
                 if (file_suffix > 0)
                 {
                     string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
@@ -363,7 +364,7 @@ namespace Metec.MVBDClient
                 // update flashing
                 for (int i = 0; i < _scene._data.Count(); i ++)
                 {
-                    _scene._data[i].isFlashing = info != null && _scene._data[i].id == info.Id && _scene._data[i].semantic_label > 1000 ? true : false;
+                    _scene._data[i].isFlashing = info != null && _scene._data[i].id == info.Id && _scene._data[i].semantic_label > 0 ? true : false;
                 }
                 send_voice();
             }
@@ -384,7 +385,7 @@ namespace Metec.MVBDClient
                 // double click
                 int id = info == null ? PARAMS.BLANK_ID : info.Id;
                 int i = e.Finger.Index;
-                if (is_double_click(i,px, py))
+                if (is_double_click(i, px, py))
                 {
                     AddToList("Double clicked:      ", id);
                     change_scene();
@@ -408,7 +409,7 @@ namespace Metec.MVBDClient
                 //last_pressed_x = -1;
                 //last_pressed_y = -1;
                 int i = e.Finger.Index;
-                if (Math.Abs(e.Finger.PX - last_pressed_x[i]) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(e.Finger.PY - last_pressed_y[i]) < PARAMS.DOUDBLE_CLICK_THRES)
+                if (Math.Abs(e.Finger.PX - last_pressed_x[i]) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(e.Finger.PY - last_pressed_y[i]) < PARAMS.DOUDBLE_CLICK_THRES && DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds < PARAMS.LONG_PRESS)
                 {
                     double_click[i] = true;
                 }
@@ -419,10 +420,13 @@ namespace Metec.MVBDClient
         {
             if (Math.Abs(x - last_pressed_x[i]) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(y - last_pressed_y[i]) < PARAMS.DOUDBLE_CLICK_THRES)
             {
-                if (DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds < PARAMS.LONG_PRESS && double_click[i])
+                double delta = DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds;
+                if ( delta < PARAMS.LONG_PRESS && double_click[i] && delta > 150)
                 {
+                    // multi click donnot trigger twice
                     if (DateTimeOffset.Now.Subtract(last_double_click_time).TotalMilliseconds > 1000)
                     {
+                        AddToList("test", delta);
                         return true;
                     }
                 }

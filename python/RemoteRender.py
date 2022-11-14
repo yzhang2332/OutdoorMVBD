@@ -20,7 +20,8 @@ def UpdateThread(draw):
     while not draw.IsConnected():
         time.sleep(1)
     
-    draw.UpdateJsonFile("..\\bin\\debug\\scene_1.json")
+    file_name = "..\\bin\\debug\\scene_{0}_1.json".format(CURRENT_FRAME)
+    draw.UpdateJsonFile(file_name)
 
 
 TEXT_SPEAKER = win.Dispatch("SAPI.SpVoice")

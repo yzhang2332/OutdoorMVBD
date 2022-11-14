@@ -2416,6 +2416,7 @@ namespace Metec.MVBDClient
         public bool IsVisible;
         public int Type;
         public bool IsFlashing;
+        public string Name;
 
         public static ExtraInfo GetFromSceneInst(SceneInst scene)
         {
@@ -2427,6 +2428,7 @@ namespace Metec.MVBDClient
                 IsVisible = scene.isValid,
                 Type = scene.type,
                 IsFlashing = scene.isFlashing,
+                Name = scene.name,
             };
         }
     }

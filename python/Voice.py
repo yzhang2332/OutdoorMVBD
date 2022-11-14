@@ -35,7 +35,8 @@ class Sound:
 
 if __name__ == "__main__":
     s = Sound()
-    s.play("birds", 1, 0)
-    time.sleep(10)
-    s.play("test", 10, 0)
-    time.sleep(10)
+    while 1:
+        s.play("birds", 1, 0)
+        time.sleep(10)
+    # s.play("test", 10, 0)
+    # time.sleep(10)

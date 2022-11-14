@@ -17,7 +17,7 @@ namespace Metec.MVBDClient
         public const double SCALE_STEP = 1.2;
         public const double MOVE_STEP = 3;  // in pins
         public const double ROT_STEP = 10;
-        public const int LONG_PRESS = 500;
+        public const int LONG_PRESS = 300;
         public const int BLANK_ID = -1;
         public const int NULL_ID = -2;
         public const int DOUDBLE_CLICK_THRES = 2;
@@ -32,6 +32,7 @@ namespace Metec.MVBDClient
             Type = -1,
             Source = null,
             SemanticLabel = VOICE_SELF,
+            Name = "self"
         };
     }
 
@@ -46,6 +47,7 @@ namespace Metec.MVBDClient
         public double x0, y0, x1, y1;  // boundingbox parameters: up left corner  and up right corner; if type == 2 , represents two end points 
         public int[] source;
         public bool isFlashing;
+        public string name;
         
         public SceneInst()
         {
@@ -60,6 +62,7 @@ namespace Metec.MVBDClient
             x1 = 0;
             y1 = 0;
             source = null;
+            name = null;
         }
     }
 
@@ -151,8 +154,10 @@ namespace Metec.MVBDClient
         public static double[] clipspace_trans_2D(double x0, double y0, double cx, double cy, double scale, double rot)
         {
             // translate
-            double x1 = x0 - cx;
-            double y1 = y0 - cy;
+            //double x1 = x0 - cx;
+            //double y1 = y0 - cy;
+            double x1 = x0;
+            double y1 = y0;
             // scale
             x1 *= scale;
             y1 *= scale;
@@ -174,8 +179,14 @@ namespace Metec.MVBDClient
 
         public static void setPin(ExtraInfo[,] array, int width, int height, int x, int y, ExtraInfo val)
         {
-            if (x >= 0 && x < width && y >= 0 && y < height)
-                array[x, y] = val;
+            if (x >= 0 && x < width && y >= 0 && y < height && val != null)
+            {
+                // do not let visible line blocked by invisible line
+                if (array[x, y] == null || array[x, y].IsVisible == false)
+                {
+                    array[x, y] = val;
+                }
+            }
         }
 
         public static void render_circle(ExtraInfo[,] array, int width, int height, int size, double[] pos, ExtraInfo val)
@@ -501,6 +512,7 @@ namespace Metec.MVBDClient
         public double scale;
         public double x0, y0;               // agent position
         public double x1, y1;               // map center
+
         public int point_size;
         public int current_suffix;
 
@@ -634,6 +646,8 @@ namespace Metec.MVBDClient
                             _data[i].x0, _data[i].y0, x0, y0, scale, orientation_map);
                         double[] pos1_clipspace = Renderer.clipspace_trans_2D(
                             _data[i].x1, _data[i].y1, x0, y0, scale, orientation_map);
+                        //double[] pos0_clipspace = { _data[i].x0, _data[i].y0 };
+                        //double[] pos1_clipspace = { _data[i].x1, _data[i].y1 };
                         Renderer.render_line(array, width, height, pos0_clipspace, pos1_clipspace, info);
                     }
                     else if(_data[i].type == 0)
@@ -794,18 +808,19 @@ namespace Metec.MVBDClient
             {
                 return "";
             }
-            int label_id = array[px, py].SemanticLabel % 1000;
-            if (label_id >= 0 && label_id < Semantics.labels.Length)
-            {
-                if (!chinese)
-                {
-                    return Semantics.labels[label_id];
-                }
-                else { 
-                    return Semantics.labels_chinese[label_id];
-                }
-            }
-            return "";
+            return array[px, py].Name;
+            //int label_id = array[px, py].SemanticLabel % 1000;
+            //if (label_id >= 0 && label_id < Semantics.labels.Length)
+            //{
+            //    if (!chinese)
+            //    {
+            //        return Semantics.labels[label_id];
+            //    }
+            //    else { 
+            //        return Semantics.labels_chinese[label_id];
+            //    }
+            //}
+            //return "";
         }
 
         public string get_semantic_label(int label_id, bool chinese)
@@ -827,7 +842,7 @@ namespace Metec.MVBDClient
             {
                 return -1;
             }
-            int file_suffix = array[px, py].SemanticLabel / 1000;
+            int file_suffix = array[px, py].SemanticLabel;
             return file_suffix;
         }
 
