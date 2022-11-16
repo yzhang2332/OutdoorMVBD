@@ -22,8 +22,9 @@ namespace Metec.MVBDClient
         bool flashing_show;
         public SendVoice send_voice_handler;
 
-        public int current_frame = 1;
+        public int current_frame = 0;
         public bool has_updated_frame = false;
+        public string file_prefix = "scene_{0}/";
 
         string[] scene_paths;
 
@@ -70,7 +71,7 @@ namespace Metec.MVBDClient
             isListening = false;
 
             // DEBUG
-            txtPath.Text = "scene_1.json";
+            txtPath.Text = "../layout/scene_1/scene_1_1.json";
             scene_paths = new string[10];
             scene_paths[0] = "scene_1.json";
             scene_paths[1] = "scene_2.json";
@@ -162,7 +163,7 @@ namespace Metec.MVBDClient
             {
                 string label = _scene.get_semantic_label(PARAMS.VOICE_FORWARD, chkChineseSpeech.Checked);
                 send_voice(label);
-                string fileName = string.Format("scene_{0}.json", file_suffix);
+                string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
                 
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
@@ -172,9 +173,14 @@ namespace Metec.MVBDClient
                 file_suffix = _scene.current_suffix / 100;
                 if (file_suffix > 0)
                 {
+                    if (file_suffix == 1 && has_updated_frame)
+                    {
+                        current_frame++;
+                        has_updated_frame = false;
+                    }
                     string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
                     send_voice(label);
-                    string fileName = string.Format("scene_{0}.json", file_suffix);
+                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
                     UpdateJsonFile(fileName);
                     _scene.current_suffix = file_suffix;
                 }
@@ -599,15 +605,29 @@ namespace Metec.MVBDClient
             }
             else if (e.Key == 220)
             {
-                send_voice();
-                change_scene();
+                // change_scene();
+                if (has_updated_frame)
+                {
+                    send_voice("刷新");
+                    current_frame ++;
+                    has_updated_frame = false;
+                }
+                int file_suffix = 1;
+                string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                UpdateJsonFile(fileName);
+                _scene.current_suffix = file_suffix;
             }
             else if (e.Key == 207)
             {
                 int file_suffix = _scene.current_suffix / 10;
                 if (file_suffix > 0)
                 {
-                    string fileName = string.Format("scene_{0}.json", file_suffix);
+                    if (file_suffix == 1 && has_updated_frame)
+                    {
+                        current_frame++;
+                        has_updated_frame = false;
+                    }
+                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
                     UpdateJsonFile(fileName);
                     _scene.current_suffix = file_suffix;
                 }
@@ -933,7 +953,7 @@ namespace Metec.MVBDClient
         // update json file and load
         public void UpdateJsonFile(string fileName)
         {
-            txtPath.Text = fileName;
+            txtPath.Text = string.Format(file_prefix, current_frame) + fileName;
             btnLoadScene_Click(null, null);
         }
     }
