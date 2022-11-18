@@ -31,8 +31,7 @@ namespace Metec.MVBDClient
             IsVisible = true,
             Type = -1,
             Source = null,
-            SemanticLabel = VOICE_SELF,
-            Name = "self"
+            SemanticLabel = VOICE_SELF
         };
     }
 
@@ -804,7 +803,7 @@ namespace Metec.MVBDClient
         public string get_label_text(ExtraInfo[,] array, int width, int height, int px, int py, bool chinese)
         {
             if (px < 0 || px >= width || py < 0 || py >= height) return "";
-            if (array[px, py] == null)
+            if (array[px, py] == null || !array[px, py].IsVisible)
             {
                 return "";
             }

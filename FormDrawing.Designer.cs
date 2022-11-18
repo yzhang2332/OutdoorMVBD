@@ -295,8 +295,8 @@
             // chkEnableIMU
             // 
             this.chkEnableIMU.AutoSize = true;
-            this.chkEnableIMU.Checked = true;
-            this.chkEnableIMU.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkEnableIMU.Checked = false;
+            // this.chkEnableIMU.CheckState = System.Windows.Forms.CheckState.Check;
             this.chkEnableIMU.Location = new System.Drawing.Point(472, 304);
             this.chkEnableIMU.Name = "chkEnableIMU";
             this.chkEnableIMU.Size = new System.Drawing.Size(84, 16);

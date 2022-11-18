@@ -18,13 +18,15 @@ namespace Metec.MVBDClient
         NotificationsMask mask;
         string ip;
 
+        protected bool fancy_switch = false;
         protected SceneData _scene;
         bool flashing_show;
         public SendVoice send_voice_handler;
 
         public int current_frame = 0;
         public bool has_updated_frame = false;
-        public string file_prefix = "scene_{0}/";
+        public string file_prefix = "{0}/scene_{1}/";
+        public string exp_folder = "";
 
         string[] scene_paths;
 
@@ -36,14 +38,14 @@ namespace Metec.MVBDClient
         public FormDrawing(string ip)
         {
             this.ip = ip;
-            this.flashing_show = false;
+            this.flashing_show = true;
             InitializeComponent();
         }
 
         public FormDrawing(string ip, SendVoice send_voice_handler)
         {
             this.ip = ip;
-            this.flashing_show = false;
+            this.flashing_show = true;
             this.send_voice_handler = send_voice_handler;
             InitializeComponent();
         }
@@ -71,7 +73,7 @@ namespace Metec.MVBDClient
             isListening = false;
 
             // DEBUG
-            txtPath.Text = "../layout/scene_1/scene_1_1.json";
+            txtPath.Text = "scene_1.json";
             scene_paths = new string[10];
             scene_paths[0] = "scene_1.json";
             scene_paths[1] = "scene_2.json";
@@ -205,18 +207,21 @@ namespace Metec.MVBDClient
                 return;
             }
             int id = info == null ? PARAMS.BLANK_ID : info.Id;
-            for (int i = 0; i < _scene._data.Count(); i++) 
+            if (fancy_switch)
             {
-                // update edge
-                if (_scene._data[i].type == 4) 
+                for (int i = 0; i < _scene._data.Count(); i++) 
                 {
-                    if (_scene._data[i].source.Contains(id))
+                    // update edge
+                    if (_scene._data[i].type == 4) 
                     {
-                        _scene._data[i].isValid = true;
-                    }
-                    else
-                    {
-                        _scene._data[i].isValid = false;
+                        if (_scene._data[i].source.Contains(id))
+                        {
+                            _scene._data[i].isValid = true;
+                        }
+                        else
+                        {
+                            _scene._data[i].isValid = false;
+                        }
                     }
                 }
             }
@@ -430,7 +435,7 @@ namespace Metec.MVBDClient
             if (Math.Abs(x - last_pressed_x[i]) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(y - last_pressed_y[i]) < PARAMS.DOUDBLE_CLICK_THRES)
             {
                 double delta = DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds;
-                if ( delta < PARAMS.LONG_PRESS && double_click[i] && delta > 150)
+                if ( delta < PARAMS.LONG_PRESS && double_click[i] && delta > 100)
                 {
                     // multi click donnot trigger twice
                     if (DateTimeOffset.Now.Subtract(last_double_click_time).TotalMilliseconds > 1000)
@@ -606,6 +611,36 @@ namespace Metec.MVBDClient
             else if (e.Key == 220)
             {
                 // change_scene();
+                // if (has_updated_frame)
+                // {
+                //     send_voice("刷新");
+                //     current_frame ++;
+                //     has_updated_frame = false;
+                // }
+                // int file_suffix = 1;
+                // string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                // UpdateJsonFile(fileName);
+                // _scene.current_suffix = file_suffix;
+                render_and_flush();
+            }
+            else if (e.Key == 207)
+            {
+                // back
+                // int file_suffix = _scene.current_suffix / 10;
+                // if (file_suffix > 0)
+                // {
+                //     if (file_suffix == 1 && has_updated_frame)
+                //     {
+                //         current_frame++;
+                //         has_updated_frame = false;
+                //     }
+                //     string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                //     UpdateJsonFile(fileName);
+                //     _scene.current_suffix = file_suffix;
+                // }
+                
+                // refreash
+                change_scene();
                 if (has_updated_frame)
                 {
                     send_voice("刷新");
@@ -617,20 +652,10 @@ namespace Metec.MVBDClient
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
             }
-            else if (e.Key == 207)
+            else if (e.Key == 206)
             {
-                int file_suffix = _scene.current_suffix / 10;
-                if (file_suffix > 0)
-                {
-                    if (file_suffix == 1 && has_updated_frame)
-                    {
-                        current_frame++;
-                        has_updated_frame = false;
-                    }
-                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
-                    UpdateJsonFile(fileName);
-                    _scene.current_suffix = file_suffix;
-                }
+                flashing_show = true;
+                fancy_switch = !fancy_switch;
             }
         }
 
@@ -933,7 +958,7 @@ namespace Metec.MVBDClient
 
         private void FlashRefresh(object sender, EventArgs e)
         {
-            if (_scene != null)
+            if (_scene != null && fancy_switch)
             {
                 flashing_show = !flashing_show;
                 render_and_flush();
@@ -953,7 +978,7 @@ namespace Metec.MVBDClient
         // update json file and load
         public void UpdateJsonFile(string fileName)
         {
-            txtPath.Text = string.Format(file_prefix, current_frame) + fileName;
+            txtPath.Text = string.Format(file_prefix, exp_folder, current_frame) + fileName;
             btnLoadScene_Click(null, null);
         }
     }
