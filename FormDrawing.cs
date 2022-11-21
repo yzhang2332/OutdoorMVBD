@@ -111,6 +111,7 @@ namespace Metec.MVBDClient
         }
 
         private string last_spoken;
+        private int last_spoken_length = 0;
         private DateTimeOffset last_spoken_time;
         private void send_voice()
         {
@@ -126,9 +127,10 @@ namespace Metec.MVBDClient
             }
             string semantic_label = _scene.get_label_text(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py, chkChineseSpeech.Checked);
             DateTimeOffset now = DateTimeOffset.Now;
-            if (semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= 1)
+            if (semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= last_spoken_length)
             {
                 send_voice(semantic_label);
+                last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
             }
         }
 
@@ -150,6 +152,10 @@ namespace Metec.MVBDClient
 
         private void change_scene()
         {
+            if (!fancy_switch)
+            {
+                return;
+            }
             if (_scene == null)
             {
                 Console.WriteLine("Exception: " + "scene is empty, load before drawing.");
@@ -170,23 +176,23 @@ namespace Metec.MVBDClient
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
             }
-            else if (file_suffix < 0)
-            {
-                file_suffix = _scene.current_suffix / 100;
-                if (file_suffix > 0)
-                {
-                    if (file_suffix == 1 && has_updated_frame)
-                    {
-                        current_frame++;
-                        has_updated_frame = false;
-                    }
-                    string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
-                    send_voice(label);
-                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
-                    UpdateJsonFile(fileName);
-                    _scene.current_suffix = file_suffix;
-                }
-            }
+            //else if (file_suffix < 0)
+            //{
+            //    file_suffix = _scene.current_suffix / 100;
+            //    if (file_suffix > 0)
+            //    {
+            //        if (file_suffix == 1 && has_updated_frame)
+            //        {
+            //            current_frame++;
+            //            has_updated_frame = false;
+            //        }
+            //        string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
+            //        send_voice(label);
+            //        string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+            //        UpdateJsonFile(fileName);
+            //        _scene.current_suffix = file_suffix;
+            //    }
+            //}
         }
 
         private void render_press(ExtraInfo info)
@@ -360,7 +366,7 @@ namespace Metec.MVBDClient
         //private int last_pressed_id;
         private int[] last_pressed_x = new int[10];
         private int[] last_pressed_y = new int[10];
-        private bool[] double_click = new bool[10];
+        private int[] double_click_stage = new int[10];
         private DateTimeOffset last_double_click_time;
         private DateTimeOffset[] last_pressed_time = new DateTimeOffset[10];
         void _con_FingerChanged(object sender, MVBDFingerEventArgs e)
@@ -386,64 +392,72 @@ namespace Metec.MVBDClient
             if (e.Finger.IsPressed)
             {
                 render_press(info);
-                //// long press
-                //int id = info == null ? PARAMS.BLANK_ID : info.Id;
-                //if (last_pressed_x != px || last_pressed_y != py)
-                //{
-                //    last_pressed_x = px;
-                //    last_pressed_y = py;
-                //    last_pressed_id = id;
-                //    last_pressed_time = DateTimeOffset.Now;
-                //}
 
                 // double click
-                int id = info == null ? PARAMS.BLANK_ID : info.Id;
                 int i = e.Finger.Index;
-                if (is_double_click(i, px, py))
-                {
-                    AddToList("Double clicked:      ", id);
-                    change_scene();
-                    last_double_click_time = DateTimeOffset.Now;
-                }
+                is_double_click(i, px, py, e.Finger.IsPressed);
                 last_pressed_x[i] = px;
                 last_pressed_y[i] = py;
                 last_pressed_time[i] = DateTimeOffset.Now;
-                double_click[i] = false;
             }
             else
             {
-                //// long press
-                //int id = info == null ? PARAMS.BLANK_ID : info.Id;
-                //if (last_pressed_id != PARAMS.NULL_ID && DateTimeOffset.Now.Subtract(last_pressed_time).TotalMilliseconds > PARAMS.LONG_PRESS)
-                //{
-                //    AddToList("Pressed:      ", id);
-                //    change_scene();
-                //}
-                //last_pressed_id = PARAMS.NULL_ID;
-                //last_pressed_x = -1;
-                //last_pressed_y = -1;
                 int i = e.Finger.Index;
-                if (Math.Abs(e.Finger.PX - last_pressed_x[i]) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(e.Finger.PY - last_pressed_y[i]) < PARAMS.DOUDBLE_CLICK_THRES && DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds < PARAMS.LONG_PRESS)
+                if (is_double_click(i, e.Finger.PX, e.Finger.PY, e.Finger.IsPressed))
                 {
-                    double_click[i] = true;
+                    AddToList("Double clicked:      ", info == null ? PARAMS.BLANK_ID : info.Id);
+                    change_scene();
+                    last_double_click_time = DateTimeOffset.Now;                
                 }
             }
         }
 
-        private bool is_double_click(int i, int x, int y)
+        private bool is_double_click(int i, int x, int y, bool is_pressed)
         {
-            if (Math.Abs(x - last_pressed_x[i]) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(y - last_pressed_y[i]) < PARAMS.DOUDBLE_CLICK_THRES)
+            switch(double_click_stage[i])
             {
-                double delta = DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds;
-                if ( delta < PARAMS.LONG_PRESS && double_click[i] && delta > 100)
-                {
-                    // multi click donnot trigger twice
-                    if (DateTimeOffset.Now.Subtract(last_double_click_time).TotalMilliseconds > 1000)
+                case 0:
+                    // first leave
+                    if (!is_pressed && is_near(x, y, last_pressed_x[i], last_pressed_y[i]) && DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds < PARAMS.LONG_PRESS)
                     {
-                        AddToList("test", delta);
+                        double_click_stage[i]++;
+                    }
+                    return false;
+                case 1:
+                    // second press
+                    if (is_pressed && is_near(x, y, last_pressed_x[i], last_pressed_y[i]))
+                    {
+                        double delta = DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds;
+                        if ( delta < PARAMS.LONG_PRESS)
+                        {
+                            // multi click donnot trigger twice
+                            if (DateTimeOffset.Now.Subtract(last_double_click_time).TotalMilliseconds > 1000)
+                            {
+                                double_click_stage[i]++;
+                                return false;
+                            }
+                        }
+                    }
+                    double_click_stage[i] = 0;
+                    return false;
+                case 2:
+                    // second leave
+                    if (!is_pressed && is_near(x, y, last_pressed_x[i], last_pressed_y[i]) && DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds < PARAMS.LONG_PRESS)
+                    {
+                        double_click_stage[i] = 0;
                         return true;
                     }
-                }
+                    double_click_stage[i] = 0;
+                    return false;
+            }
+            return false;
+        }
+
+        private bool is_near(int x, int y, int target_x, int target_y)
+        {
+            if (Math.Abs(x - target_x) < PARAMS.DOUDBLE_CLICK_THRES && Math.Abs(y - target_y) < PARAMS.DOUDBLE_CLICK_THRES)
+            {
+                return true;
             }
             return false;
         }
@@ -600,8 +614,26 @@ namespace Metec.MVBDClient
             }
             else if (e.Key == 241) // F1: mode0
             {
-                _scene.set_mode(0);
-                render_and_flush();
+                //_scene.set_mode(0);
+                //render_and_flush();
+                if (!fancy_switch)
+                {
+                    return;
+                }
+                int file_suffix = _scene.current_suffix / 100;
+                if (file_suffix > 0)
+                {
+                    if (file_suffix == 1 && has_updated_frame)
+                    {
+                        current_frame++;
+                        has_updated_frame = false;
+                    }
+                    string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
+                    send_voice(label);
+                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                    UpdateJsonFile(fileName);
+                    _scene.current_suffix = file_suffix;
+                }
             }
             else if (e.Key == 242) // F2: mode1
             {
@@ -638,13 +670,13 @@ namespace Metec.MVBDClient
                 //     UpdateJsonFile(fileName);
                 //     _scene.current_suffix = file_suffix;
                 // }
-                
+
                 // refreash
                 change_scene();
                 if (has_updated_frame)
                 {
                     send_voice("刷新");
-                    current_frame ++;
+                    current_frame++;
                     has_updated_frame = false;
                 }
                 int file_suffix = 1;

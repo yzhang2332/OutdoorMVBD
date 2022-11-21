@@ -17,7 +17,7 @@ namespace Metec.MVBDClient
         public const double SCALE_STEP = 1.2;
         public const double MOVE_STEP = 3;  // in pins
         public const double ROT_STEP = 10;
-        public const int LONG_PRESS = 300;
+        public const int LONG_PRESS = 400;
         public const int BLANK_ID = -1;
         public const int NULL_ID = -2;
         public const int DOUDBLE_CLICK_THRES = 2;
@@ -181,7 +181,7 @@ namespace Metec.MVBDClient
             if (x >= 0 && x < width && y >= 0 && y < height && val != null)
             {
                 // do not let visible line blocked by invisible line
-                if (array[x, y] == null || array[x, y].IsVisible == false)
+                if (array[x, y] == null || array[x, y].IsVisible == false || (array[x, y].Type == 4 && val.Type != 4))
                 {
                     array[x, y] = val;
                 }
