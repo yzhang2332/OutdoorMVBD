@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 [assembly: Guid                     ("6b9cad8d-b453-4a70-8a68-eae75cfc7255")]
 [assembly: AssemblyVersion          ("1.2.0.148")]
 [assembly: AssemblyFileVersion      ("1.2.0.148")]
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
 // 1.2.0.148  01.06.2021  Hotfix int the Tcp-IP communication. The header stays at 2 bytes for the length.
 //                        The sending of very long data (over 65536) is not good.

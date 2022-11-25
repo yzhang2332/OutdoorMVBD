@@ -6,14 +6,21 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using System.Linq;
+using log4net.Config;
+using log4net;
+using log4net.Appender;
 
 namespace Metec.MVBDClient
 {
+    // python method
+    // text speaker
     public delegate void SendVoice(int type, string label);
+    // background speaker
     public delegate void SceneVoice(List<SceneInst> data);
+
     public partial class FormDrawing : Form
     {
-        protected MVBDConnection    _con;
+        protected MVBDConnection _con;
         bool isListening;
         int px, py; // finger position
         NotificationsMask mask;
@@ -21,6 +28,7 @@ namespace Metec.MVBDClient
 
         protected bool fancy_switch = false;
         protected SceneData _scene;
+        protected BaseSceneHandler _sceneHandler;
         bool flashing_show;
         public SendVoice send_voice_handler;
         public SceneVoice scene_voice_handler;
@@ -32,8 +40,11 @@ namespace Metec.MVBDClient
 
         string[] scene_paths;
 
+        public ILog logger;
+
         public FormDrawing()
         {
+            InitLog();
             InitializeComponent();
         }
 
@@ -41,16 +52,27 @@ namespace Metec.MVBDClient
         {
             this.ip = ip;
             this.flashing_show = true;
+            InitLog();
             InitializeComponent();
         }
 
-        public FormDrawing(string ip, SendVoice send_voice_handler, SceneVoice scene_voice_handler=null)
+        public FormDrawing(string ip, SendVoice send_voice_handler, SceneVoice scene_voice_handler = null)
         {
             this.ip = ip;
             this.flashing_show = true;
             this.send_voice_handler = send_voice_handler;
             this.scene_voice_handler = scene_voice_handler;
+            InitLog();
             InitializeComponent();
+        }
+
+        private void InitLog()
+        {
+            var configPath = new System.IO.FileInfo(System.IO.Directory.GetCurrentDirectory() + "/log4net.config");
+            XmlConfigurator.Configure(configPath);
+            this.logger = LogManager.GetLogger(typeof(FormDrawing));
+            string path1 = (LogManager.GetCurrentLoggers()[0].Logger.Repository.GetAppenders()[0] as FileAppender).File;
+            Console.WriteLine(path1);
         }
 
         private void FormDrawings_Load(object sender, EventArgs e)
@@ -72,7 +94,7 @@ namespace Metec.MVBDClient
 
             px = -1;
             py = -1;
-            
+
             isListening = false;
 
             // DEBUG
@@ -116,7 +138,7 @@ namespace Metec.MVBDClient
         private string last_spoken;
         private int last_spoken_length = 0;
         private DateTimeOffset last_spoken_time;
-        private void send_voice()
+        private void send_voice(bool is_double_click = false)
         {
             if (_scene == null)
             {
@@ -128,12 +150,63 @@ namespace Metec.MVBDClient
                 Console.WriteLine("Exception: " + "MVBD not connected.");
                 return;
             }
-            string semantic_label = _scene.get_label_text(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py, chkChineseSpeech.Checked);
             DateTimeOffset now = DateTimeOffset.Now;
-            if (semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= last_spoken_length)
+            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
+            if (info == null)
             {
-                send_voice(semantic_label);
-                last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
+                return;
+            }
+            string semantic_label = "";
+            if (is_double_click)
+            {
+                if (info.Type == 3)
+                {
+                    // double click shape, interrupt current voice
+                    semantic_label = string.Format(PARAMS.VOICE_EXTEND, info.Name);
+                    send_voice(semantic_label);
+                    last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
+                }
+                else if (info.Type == 4 && info.Source != null)
+                {
+                    // double click line, no interrupt
+                    if (info.Source[0] == 9999)
+                    {
+                        // self - obj
+                        semantic_label = string.Format(PARAMS.VOICE_REACHABLE, _scene.obj_dict[info.Source[1]]);
+                    }
+                    else
+                    {
+                        // obj - obj
+                        var obj1 = _scene.obj_dict[info.Source[0]];
+                        var obj2 = _scene.obj_dict[info.Source[1]];
+                        semantic_label = string.Format(PARAMS.VOICE_OBJ_RELATION, obj1, obj2, info.Name);
+                    }
+                    if (semantic_label != "" && semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= last_spoken_length)
+                    {
+                        send_voice(semantic_label);
+                        last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
+                    }
+                }
+            }
+            else
+            {
+                if (info.Type == 3)
+                {
+                    // click shape, no interrupt
+                    semantic_label = info.Name;
+                }
+                else if (info.Type == 4 && info.Source != null && info.Source[0] == 9999)
+                {
+                    // click line, no interrupt
+                    var obj_id = info.Source[1];
+                    var position = GetRelativePosition(obj_id, _scene);
+                    semantic_label = string.Format(PARAMS.VOICE_DOUBLE_CLICK_LINE, _scene.obj_dict[obj_id], position);
+                }
+                if (semantic_label != "" && semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= last_spoken_length)
+                {
+                    send_voice(semantic_label);
+                    last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
+                }
             }
         }
 
@@ -172,30 +245,32 @@ namespace Metec.MVBDClient
             int file_suffix = _scene.get_suffix(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
             if (file_suffix > 0)
             {
-                string label = _scene.get_semantic_label(PARAMS.VOICE_FORWARD, chkChineseSpeech.Checked);
-                send_voice(label);
+                ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
                 string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
-                
+
                 UpdateJsonFile(fileName);
-                _scene.current_suffix = file_suffix;
+                GenerateJsonFileContext(file_suffix, info.Name);
             }
-            //else if (file_suffix < 0)
-            //{
-            //    file_suffix = _scene.current_suffix / 100;
-            //    if (file_suffix > 0)
-            //    {
-            //        if (file_suffix == 1 && has_updated_frame)
-            //        {
-            //            current_frame++;
-            //            has_updated_frame = false;
-            //        }
-            //        string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
-            //        send_voice(label);
-            //        string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
-            //        UpdateJsonFile(fileName);
-            //        _scene.current_suffix = file_suffix;
-            //    }
-            //}
+            else if (file_suffix < 0)
+            {
+                file_suffix = _scene.current_suffix / 100;
+                if (file_suffix > 0)
+                {
+                    if (file_suffix == 1 && has_updated_frame)
+                    {
+                        current_frame++;
+                        has_updated_frame = false;
+                    }
+                    send_voice(PARAMS.VOICE_BACK);
+                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                    UpdateJsonFile(fileName);
+                    GenerateJsonFileContext(file_suffix);
+                }
+                else
+                {
+                    send_voice(PARAMS.VOICE_BACK_FAIL);
+                }
+            }
         }
 
         private void render_press(ExtraInfo info)
@@ -218,10 +293,10 @@ namespace Metec.MVBDClient
             int id = info == null ? PARAMS.BLANK_ID : info.Id;
             if (fancy_switch)
             {
-                for (int i = 0; i < _scene._data.Count(); i++) 
+                for (int i = 0; i < _scene._data.Count(); i++)
                 {
                     // update edge
-                    if (_scene._data[i].type == 4) 
+                    if (_scene._data[i].type == 4)
                     {
                         if (_scene._data[i].source.Contains(id))
                         {
@@ -242,9 +317,9 @@ namespace Metec.MVBDClient
             // Status;
             string status;
 
-            if ( _con.IsConnected() == true )
+            if (_con.IsConnected() == true)
             {
-                status = String.Format("Connected at {0}, Width={1}, Height={2}, Position={3}",  _con.LocalEndPoint, _con.PinCountX, _con.PinCountY, _con.WorkingPosition);
+                status = String.Format("Connected at {0}, Width={1}, Height={2}, Position={3}", _con.LocalEndPoint, _con.PinCountX, _con.PinCountY, _con.WorkingPosition);
                 if (isListening == false)
                 {
                     isListening = true;
@@ -256,27 +331,27 @@ namespace Metec.MVBDClient
                     _scene = SceneData.load(txtPath.Text);
                     render_and_flush();
                 }
-                    
+
             }
             else
             {
                 status = "Not connected";
             }
 
-            if ( status != lblStatus.Text ) lblStatus.Text = status;
+            if (status != lblStatus.Text) lblStatus.Text = status;
 
             if (chkEnableIMU.Checked && spSerialPort.IsOpen == false)
             {
                 PortOpen();
             }
         }
-        
+
 
         /// <summary>Buttons Draw...</summary>
         private void btnDraw_Click(object sender, EventArgs e)
         {
             // 1. Clear all pins
-            if ( chkPinsAutoClear.Checked == true )
+            if (chkPinsAutoClear.Checked == true)
             {
                 _con.SendPinsClear();
             }
@@ -285,37 +360,37 @@ namespace Metec.MVBDClient
             // 2. Draw something
             Random rnd = new Random();
 
-            if       ( sender == btnPinsDrawRectangle )
-            { 
-                _con.SendPinsDrawRectangle( rnd.Next(0,20), rnd.Next(0,20),   20,10);
-            }
-
-            else  if ( sender == btnPinsDrawLine   )
+            if (sender == btnPinsDrawRectangle)
             {
-                _con.SendPinsDrawLine(0, rnd.Next(0,20) , _con.PinCountX-1, rnd.Next(20,40) );
+                _con.SendPinsDrawRectangle(rnd.Next(0, 20), rnd.Next(0, 20), 20, 10);
             }
 
-            else  if ( sender == btnPinsDrawPolygon   )
+            else if (sender == btnPinsDrawLine)
+            {
+                _con.SendPinsDrawLine(0, rnd.Next(0, 20), _con.PinCountX - 1, rnd.Next(20, 40));
+            }
+
+            else if (sender == btnPinsDrawPolygon)
             {
                 Point[] points = new Point[4];
 
-                points[0] = new Point( rnd.Next(0,7),   20);
-                points[1] = new Point( rnd.Next(10,50), 40);
-                points[2] = new Point( rnd.Next(60,65), 20);
-                points[3] = new Point( rnd.Next(0,70),   2);
+                points[0] = new Point(rnd.Next(0, 7), 20);
+                points[1] = new Point(rnd.Next(10, 50), 40);
+                points[2] = new Point(rnd.Next(60, 65), 20);
+                points[3] = new Point(rnd.Next(0, 70), 2);
 
-                _con.SendPinsDrawPolygon( points );
+                _con.SendPinsDrawPolygon(points);
             }
-            
-            else if ( sender == btnPinsDrawCircle )
+
+            else if (sender == btnPinsDrawCircle)
             {
-                _con.SendPinsDrawCircle( rnd.Next(20,40), rnd.Next(20,30), rnd.Next(10,20) );
+                _con.SendPinsDrawCircle(rnd.Next(20, 40), rnd.Next(20, 30), rnd.Next(10, 20));
             }
 
 
 
             // 3. Flush it to show it in the MVBD
-            if ( chkPinsAutoFlush.Checked == true )
+            if (chkPinsAutoFlush.Checked == true)
             {
                 _con.SendPinsFlush();
             }
@@ -338,9 +413,9 @@ namespace Metec.MVBDClient
         /// <summary>Send with Enter</summary>
         private void txtSpeakText_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ( e.KeyChar == 13 )
+            if (e.KeyChar == 13)
             {
-                btnSpeakText_Click(null,null);
+                btnSpeakText_Click(null, null);
             }
         }
 
@@ -385,7 +460,7 @@ namespace Metec.MVBDClient
             if (chkImmediateVoice.Checked)
             {
                 // update flashing
-                for (int i = 0; i < _scene._data.Count(); i ++)
+                for (int i = 0; i < _scene._data.Count(); i++)
                 {
                     _scene._data[i].isFlashing = info != null && _scene._data[i].id == info.Id && _scene._data[i].semantic_label > 0 ? true : false;
                 }
@@ -409,15 +484,16 @@ namespace Metec.MVBDClient
                 if (is_double_click(i, e.Finger.PX, e.Finger.PY, e.Finger.IsPressed))
                 {
                     AddToList("Double clicked:      ", info == null ? PARAMS.BLANK_ID : info.Id);
+                    send_voice(true);
                     change_scene();
-                    last_double_click_time = DateTimeOffset.Now;                
+                    last_double_click_time = DateTimeOffset.Now;
                 }
             }
         }
 
         private bool is_double_click(int i, int x, int y, bool is_pressed)
         {
-            switch(double_click_stage[i])
+            switch (double_click_stage[i])
             {
                 case 0:
                     // first leave
@@ -431,7 +507,7 @@ namespace Metec.MVBDClient
                     if (is_pressed && is_near(x, y, last_pressed_x[i], last_pressed_y[i]))
                     {
                         double delta = DateTimeOffset.Now.Subtract(last_pressed_time[i]).TotalMilliseconds;
-                        if ( delta < PARAMS.LONG_PRESS)
+                        if (delta < PARAMS.LONG_PRESS)
                         {
                             // multi click donnot trigger twice
                             if (DateTimeOffset.Now.Subtract(last_double_click_time).TotalMilliseconds > 1000)
@@ -619,6 +695,7 @@ namespace Metec.MVBDClient
             {
                 //_scene.set_mode(0);
                 //render_and_flush();
+                // back to higher level
                 if (!fancy_switch)
                 {
                     return;
@@ -631,11 +708,14 @@ namespace Metec.MVBDClient
                         current_frame++;
                         has_updated_frame = false;
                     }
-                    string label = _scene.get_semantic_label(PARAMS.VOICE_BACK, chkChineseSpeech.Checked);
-                    send_voice(label);
+                    send_voice(PARAMS.VOICE_BACK);
                     string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
                     UpdateJsonFile(fileName);
-                    _scene.current_suffix = file_suffix;
+                    GenerateJsonFileContext(file_suffix);
+                }
+                else
+                {
+                    send_voice(PARAMS.VOICE_BACK_FAIL);
                 }
             }
             else if (e.Key == 242) // F2: mode1
@@ -689,8 +769,13 @@ namespace Metec.MVBDClient
             }
             else if (e.Key == 206)
             {
+                // fancy switch
                 flashing_show = true;
                 fancy_switch = !fancy_switch;
+                if (scene_voice_handler != null)
+                {
+                    scene_voice_handler(_scene._data);
+                }
             }
         }
 
@@ -811,10 +896,10 @@ namespace Metec.MVBDClient
                     Console.WriteLine("Exception: " + "No available ports.");
                     return;
                 }
-                spSerialPort.PortName = avail_ports[avail_ports.Length-1];
+                spSerialPort.PortName = avail_ports[avail_ports.Length - 1];
                 spSerialPort.BaudRate = 9600;
                 //Console.WriteLine("Opening port : " + avail_ports[avail_ports.Length]);
-                lblPort.Text = avail_ports[avail_ports.Length-1];
+                lblPort.Text = avail_ports[avail_ports.Length - 1];
                 spSerialPort.Open();
                 bClosing = false;
                 tmr_refresh.Start();
@@ -1000,6 +1085,14 @@ namespace Metec.MVBDClient
             }
         }
 
+        private void EmptyVoiceChecker(object sender, EventArgs e)
+        {
+            if (_scene != null && _sceneHandler != null && DateTimeOffset.Now.Subtract(last_spoken_time).TotalSeconds >= 30)
+            {
+                send_voice(_sceneHandler.GetRemindText());
+            }
+        }
+
         // check whether is connected
         public bool IsConnected()
         {
@@ -1013,12 +1106,113 @@ namespace Metec.MVBDClient
         // update json file and load
         public void UpdateJsonFile(string fileName)
         {
+            logger.Info(string.Format("change to file: {0}", fileName));
             txtPath.Text = string.Format(file_prefix, exp_folder, current_frame) + fileName;
+            // for windows debug
+            if (exp_folder == "")
+            {
+                txtPath.Text = fileName;
+            }
             btnLoadScene_Click(null, null);
-            if(fancy_switch && scene_voice_handler != null)
+        }
+
+        public void GenerateJsonFileContext(int current_suffix, string current_object = null)
+        {
+            _scene.current_suffix = current_suffix;
+            if (_scene.current_suffix == 1)
+            {
+                _sceneHandler = new FirstLevelHandler(_scene);
+            }
+            else if (current_object != null)
+            {
+                _sceneHandler = new SecondLevelHandler(_scene, current_object);
+            }
+            if (fancy_switch)
+            {
+                var overview = _sceneHandler.GetOverview();
+                send_voice(overview);
+            }
+            if (fancy_switch && scene_voice_handler != null)
             {
                 scene_voice_handler(_scene._data);
             }
+        }
+
+        public static string GetRelativePosition(int obj_id, SceneData _scene)
+        {
+            for (int i = 0; i < _scene._data.Count; i++)
+            {
+                if (_scene._data[i].id != obj_id)
+                {
+                    continue;
+                }
+
+                var obj = _scene._data[i];
+                if (obj.cx < 0)
+                {
+                    var tan = obj.cy / obj.cx;
+                    if (tan > 2.41)
+                    {
+                        return "右侧";
+                    }
+                    else if (tan > 0.41)
+                    {
+                        return "右下角";
+                    }
+                    else if (tan > -0.41)
+                    {
+                        return "下方";
+                    }
+                    else if (tan > -2.41)
+                    {
+                        return "左下角";
+                    }
+                    else
+                    {
+                        return "左侧";
+                    }
+                }
+                else if (obj.cx > 0)
+                {
+                    var tan = obj.cy / obj.cx;
+                    if (tan > 2.41)
+                    {
+                        return "左侧";
+                    }
+                    else if (tan > 0.41)
+                    {
+                        return "左上角";
+                    }
+                    else if (tan > -0.41)
+                    {
+                        return "上方";
+                    }
+                    else if (tan > -2.41)
+                    {
+                        return "右上角";
+                    }
+                    else
+                    {
+                        return "右侧";
+                    }
+                }
+                else
+                {
+                    if (obj.cy > 0)
+                    {
+                        return "左侧";
+                    }
+                    else if (obj.cy < 0)
+                    {
+                        return "右侧";
+                    }
+                    else
+                    {
+                        return "中心";
+                    }
+                }
+            }
+            return "未知";
         }
     }
 }

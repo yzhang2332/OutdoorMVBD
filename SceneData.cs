@@ -23,8 +23,19 @@ namespace Metec.MVBDClient
         public const int DOUDBLE_CLICK_THRES = 2;
 
         public const int VOICE_SELF = 29;
-        public const int VOICE_BACK = 30;
-        public const int VOICE_FORWARD = 31;
+        // public const int VOICE_BACK = 30;
+        // public const int VOICE_FORWARD = 31;
+        // public const int VOICE_BACK_FAILED = 32;
+
+        public const string VOICE_EXTEND = "为您展开{0}";
+        public const string VOICE_REACHABLE = "{0}可以到达";
+        public const string VOICE_DOUBLE_CLICK_LINE = "{0}在{1}不远处";
+        public const string VOICE_OBJ_RELATION = "{0}在{1}{2}";
+        public const string VOICE_WELCOME = "欢迎探索{0}";
+        public const string VOICE_SELF_POSITION = "您自己在画面{0}";
+        public const string VOICE_CURRENT_SCENE = "您正在探索{0}";
+        public const string VOICE_BACK = "返回上一层级";
+        public const string VOICE_BACK_FAIL = "您已在最初画面";
 
         public static ExtraInfo AGENT_INFO = new ExtraInfo { 
             Id = -1,
@@ -39,7 +50,7 @@ namespace Metec.MVBDClient
     {
         // {0=Normal instance, 1=Large instance, 2=Wall, 3=Door}
         public bool isValid;
-        public int type;
+        public int type;               // 3=object, 4=relation
         public int semantic_label;     // ScanNet labels
         public int id;
         public double cx, cy; // center
@@ -100,6 +111,7 @@ namespace Metec.MVBDClient
             "me",
             "back",
             "forward",
+            "already in first frame",
         };
 
         public static string[] labels_chinese = {
@@ -132,9 +144,10 @@ namespace Metec.MVBDClient
             "在附近",
             "在上面",
             "拥有",
-            "自己",
+            "我自己",
             "返回",
             "展开",
+            "您已在最初画面",
         };
     }
     public class Renderer
@@ -511,9 +524,12 @@ namespace Metec.MVBDClient
         public double scale;
         public double x0, y0;               // agent position
         public double x1, y1;               // map center
+        public string overview;             // overview
 
         public int point_size;
         public int current_suffix;
+        [System.Web.Script.Serialization.ScriptIgnore]
+        public Dictionary<int, string> obj_dict;    // map of objects
 
         public SceneData() : this(0, 0, 0, 1.0, 0, 0,0,0, 5)
         {
@@ -532,6 +548,7 @@ namespace Metec.MVBDClient
             y1 = _y1;
             point_size = _point_size;
             current_suffix = 1;
+            obj_dict = new Dictionary<int, string>();
         }
 
         public bool save(string path)
@@ -582,6 +599,13 @@ namespace Metec.MVBDClient
             }
 
             SceneData ret = serializer.Deserialize<SceneData>(json_string);
+            var obj_dict = new Dictionary<int, string>();
+            for (int i = 0 ; i < ret._data.Count; i++)
+            {
+                var obj = ret._data[i];
+                obj_dict.Add(obj.id,obj.name);
+            }
+            ret.obj_dict = obj_dict;
             return ret;
         }
 
@@ -859,7 +883,11 @@ namespace Metec.MVBDClient
         public ExtraInfo get_extra_info(ExtraInfo[,] array, int width, int height, int px, int py)
         {
             if (px < 0 || px >= width || py < 0 || py >= height) return null;
-            return array[px, py];
+            if (array[px, py] != null && array[px, py].IsVisible)
+            {
+                return array[px, py];
+            }
+            return null;
         }
     }
 }
