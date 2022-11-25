@@ -10,6 +10,7 @@ using System.Linq;
 namespace Metec.MVBDClient
 {
     public delegate void SendVoice(int type, string label);
+    public delegate void SceneVoice(List<SceneInst> data);
     public partial class FormDrawing : Form
     {
         protected MVBDConnection    _con;
@@ -22,6 +23,7 @@ namespace Metec.MVBDClient
         protected SceneData _scene;
         bool flashing_show;
         public SendVoice send_voice_handler;
+        public SceneVoice scene_voice_handler;
 
         public int current_frame = 0;
         public bool has_updated_frame = false;
@@ -42,11 +44,12 @@ namespace Metec.MVBDClient
             InitializeComponent();
         }
 
-        public FormDrawing(string ip, SendVoice send_voice_handler)
+        public FormDrawing(string ip, SendVoice send_voice_handler, SceneVoice scene_voice_handler=null)
         {
             this.ip = ip;
             this.flashing_show = true;
             this.send_voice_handler = send_voice_handler;
+            this.scene_voice_handler = scene_voice_handler;
             InitializeComponent();
         }
 
@@ -1012,6 +1015,10 @@ namespace Metec.MVBDClient
         {
             txtPath.Text = string.Format(file_prefix, exp_folder, current_frame) + fileName;
             btnLoadScene_Click(null, null);
+            if(fancy_switch && scene_voice_handler != null)
+            {
+                scene_voice_handler(_scene._data);
+            }
         }
     }
 }

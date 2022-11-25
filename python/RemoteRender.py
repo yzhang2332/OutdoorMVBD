@@ -15,6 +15,7 @@ clr.AddReference("MVBDClient")
 from Metec.MVBDClient import *
 import System.Windows.Forms as WinForm
 
+
 def UpdateThread(draw):
     #wait for connection
     while not draw.IsConnected():
@@ -23,7 +24,6 @@ def UpdateThread(draw):
     file_name = "../bin/debug/scene_1.json"
     draw.UpdateJsonFile(file_name)
 
-
 #TEXT_SPEAKER = win.Dispatch("SAPI.SpVoice")
 
 #def SendVoiceHandler(type, label):
@@ -31,8 +31,11 @@ def UpdateThread(draw):
 #        TEXT_SPEAKER.Speak(label)
 
 if __name__ == "__main__":
+    # init
+    sound_manager = Sound()
+
     draw = FormDrawing("192.168.14.74") # MVBD ip
-    #draw = FormDrawing("192.168.14.74", SendVoice(SendVoiceHandler)) # MVBD ip
+    #draw = FormDrawing("192.168.14.74", SendVoice(SendVoiceHandler), SceneVoice(sound_manager.play)) # MVBD ip
     app = WinForm.Application
 
     updateThread = threading.Thread(target=UpdateThread, args=(draw,))
