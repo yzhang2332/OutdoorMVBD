@@ -58,6 +58,7 @@ namespace Metec.MVBDClient
         public int[] source;
         public bool isFlashing;
         public string name;
+        public SceneNote note;
         
         public SceneInst()
         {
@@ -73,6 +74,117 @@ namespace Metec.MVBDClient
             y1 = 0;
             source = null;
             name = null;
+            note = null;
+        }
+    }
+
+    public class SceneNote
+    {
+        public int id;                // related obj id, 0 represent scene note
+        public string name;           // name
+        public DateTime t;            // time
+        public string jsonFileName;   // layout name
+        public string imgName;        // img name
+        public string recordName;     // recording voice name
+
+        public static bool save(string path, SceneData _scene)
+        {
+            var notes = new List<SceneNote>();
+            if (_scene._scene_note.Count > 0)
+            {
+                notes.AddRange(_scene._scene_note);
+            }
+
+            for ( int i = 0; i < _scene._data.Count; i ++)
+            {
+                if (_scene._data[i].note != null)
+                {
+                    notes.Add(_scene._data[i].note);
+                }
+            }
+
+            var serializer = new JavaScriptSerializer();
+            var serializedResult = serializer.Serialize(notes);
+            // Console.WriteLine(serializedResult);
+            try
+            {
+                StreamWriter sw = new StreamWriter(path);
+                //Write a line of text
+                sw.WriteLine(serializedResult);
+                sw.Close();
+                Console.WriteLine(serializedResult);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public void print()
+        {
+            var serializer = new JavaScriptSerializer();
+            var serializedResult = serializer.Serialize(this);
+            Console.WriteLine(serializedResult);
+        }
+
+        public static void load(string path, SceneData _scene)
+        {
+            String json_string;
+            var serializer = new JavaScriptSerializer();
+
+            try
+            {
+                StreamReader sr = new StreamReader(path);
+                //Read the first line of text
+                json_string = sr.ReadToEnd();
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+                return;
+            }
+
+            List<SceneNote> ret = serializer.Deserialize<List<SceneNote>>(json_string);
+            int i = 0;
+            while (i < ret.Count)
+            {
+                if (ret[i].id >= 10000)
+                {
+                    i++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (i > 0)
+            {
+                _scene._scene_note = ret.GetRange(0, i);
+            }
+
+            var noteMap = new Dictionary<int, SceneNote>();
+            for (int j = i; j < ret.Count; j++)
+            {
+                noteMap.Add(ret[j].id, ret[j]);
+            }
+            for (int j = 0; j < _scene._data.Count; j++)
+            {
+                int objId = _scene._data[j].id;
+                if (noteMap.ContainsKey(objId))
+                {
+                    _scene._data[j].note = noteMap[objId];
+                }
+            }
+        }
+
+        public static string getPathFromScenePath(string path)
+        {
+            var fileName = path.Split('.')[0];
+            return string.Format("{0}_note.json", fileName);
         }
     }
 
@@ -180,7 +292,7 @@ namespace Metec.MVBDClient
 
         public static double[] get_display_space_coords(int width, int height, double[] pos)
         {
-            return new double[] { pos[0] + width / 2, height / 2 - pos[1]};
+            return new double[] { pos[0] + width / 2, height / 2 - pos[1] };
         }
 
         //public static void setPin(int[,] array, int width, int height, int x, int y, int val)
@@ -222,7 +334,7 @@ namespace Metec.MVBDClient
                 return;
             }
 
-            for (int i = -r; i <= r; i++ )
+            for (int i = -r; i <= r; i++)
             {
                 for (int j = -r; j <= r; j++)
                 {
@@ -439,8 +551,8 @@ namespace Metec.MVBDClient
             // sort along x axis
             void swap(ref int a, ref int b) { int tmp = a; a = b; b = tmp; }
 
-            if (x2 > x3) { swap(ref x2,ref x3); swap(ref y2, ref y3); }
-            if (x1 > x2) { swap(ref x1,ref x2); swap(ref y1, ref y2); }
+            if (x2 > x3) { swap(ref x2, ref x3); swap(ref y2, ref y3); }
+            if (x1 > x2) { swap(ref x1, ref x2); swap(ref y1, ref y2); }
             if (x2 > x3) { swap(ref x2, ref x3); swap(ref y2, ref y3); }
 
 
@@ -510,6 +622,28 @@ namespace Metec.MVBDClient
             render_circle(array, width, height, (int)radius, pos, val);
             render_line(array, width, height, pos1, pos2, val);
         }
+        public static void render_circle_with_note(ExtraInfo[,] array, int width, int height, int size, double[] pos, ExtraInfo val)
+        {
+            var pos1 = new double[] { pos[0] - size / 2, pos[1] - size / 2 - 1 };
+            var pos2 = new double[] { pos[0] + size / 2, pos[1] - size / 2 - 1 };
+
+            render_circle(array, width, height, size, pos, val);
+            render_line(array, width, height, pos1, pos2, val);
+        }
+
+        public static void render_rectangle_with_note(ExtraInfo[,] array, int width, int height, int i, ExtraInfo val)
+        {
+            var size = 3;
+            var center = new double[] { (-width) / 2 + size / 2 + 1, height / 2 - size / 2 - (size + 3) * i - 1 };    // left
+            // var center = new double[] { (-width) / 2 + size / 2 + (size + 1) * i + 1, (-height) / 2 + size / 2 + 3 };    // bottom
+            var corner0 = new double[] { center[0] - size / 2, center[1] - size / 2 };
+            var corner1 = new double[] { center[0] + size / 2, center[1] - size / 2 };
+            var pos1 = new double[] { corner0[0], corner0[1] - 2 };
+            var pos2 = new double[] { corner1[0], corner1[1] - 2 };
+
+            render_rectangle(array, width, height, center, corner0, corner1, val);
+            render_line(array, width, height, pos1, pos2, val);
+        }
     }
 
     /// <summary>Representation for a scene</summary>
@@ -528,6 +662,8 @@ namespace Metec.MVBDClient
 
         public int point_size;
         public int current_suffix;
+        [System.Web.Script.Serialization.ScriptIgnore]
+        public List<SceneNote> _scene_note;
         [System.Web.Script.Serialization.ScriptIgnore]
         public Dictionary<int, string> obj_dict;    // map of objects
 
@@ -549,6 +685,7 @@ namespace Metec.MVBDClient
             point_size = _point_size;
             current_suffix = 1;
             obj_dict = new Dictionary<int, string>();
+            _scene_note = new List<SceneNote>();
         }
 
         public bool save(string path)
@@ -606,6 +743,9 @@ namespace Metec.MVBDClient
                 obj_dict.Add(obj.id,obj.name);
             }
             ret.obj_dict = obj_dict;
+
+            var notePath = SceneNote.getPathFromScenePath(path);
+            SceneNote.load(notePath, ret);
             return ret;
         }
 
@@ -650,11 +790,23 @@ namespace Metec.MVBDClient
                     else if (_data[i].type == 3)
                     {
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
-                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
+                        if (_data[i].note != null)
+                        {
+                            Renderer.render_circle_with_note(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
+                        }
+                        else
+                        {
+                            Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
+                        }
                     }
                 }
                 double[] agent_clipspace = new double[] { 0,0};
                 Renderer.render_agent(array, width, height, agent_clipspace, 90, PARAMS.AGENT_INFO);
+                for (int i = 0; i < _scene_note.Count; i++)
+                {
+                    var sceneNoteExtraInfo = ExtraInfo.GetFromSceneNote(_scene_note[i]);
+                    Renderer.render_rectangle_with_note(array, width, height, i, sceneNoteExtraInfo);
+                }
             }
             else if (mode == 1)  
             {
@@ -694,12 +846,24 @@ namespace Metec.MVBDClient
                     {
                         //double[] pos_clipspace = { _data[i].cx, _data[i].cy };
                         double[] pos_clipspace = Renderer.clipspace_trans_2D(_data[i].cx, _data[i].cy, x0, y0, scale, 90 - orientation_agent);
-                        Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
+                        if (_data[i].note != null)
+                        {
+                            Renderer.render_circle_with_note(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
+                        }
+                        else
+                        {
+                            Renderer.render_circle(array, width, height, (int)Math.Round(_data[i].x0), pos_clipspace, info);
+                        }
                     }
                 }
                 double[] agent_clipspace = Renderer.clipspace_trans_2D(
                             x0, y0, x1, y1, scale, orientation_map);
                 Renderer.render_agent(array, width, height, agent_clipspace, orientation_agent + orientation_map, PARAMS.AGENT_INFO);
+                for (int i = 0; i < _scene_note.Count; i++)
+                {
+                    var sceneNoteExtraInfo =ExtraInfo.GetFromSceneNote(_scene_note[i]);
+                    Renderer.render_rectangle_with_note(array, width, height, i, sceneNoteExtraInfo);
+                }
             }
             else
             {
@@ -710,14 +874,14 @@ namespace Metec.MVBDClient
         }
 
 
-        public static void flush(ExtraInfo[,] array, bool[,] array_display, int width, int height, bool flashing_show=true)
+        public static void flush(ExtraInfo[,] array, bool[,] array_display, int width, int height, bool flashingShow=true)
         {
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
                     array_display[i, j] = array[i, j] != null && array[i, j].IsVisible;
-                    if (array[i, j] != null && flashing_show == false && array[i, j].IsFlashing == true)
+                    if (array[i, j] != null && flashingShow == false && array[i, j].IsFlashing == true)
                     {
                         array_display[i, j] = false;
                     }

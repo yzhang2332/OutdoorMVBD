@@ -17,6 +17,8 @@ namespace Metec.MVBDClient
     public delegate void SendVoice(int type, string label);
     // background speaker
     public delegate void SceneVoice(List<SceneInst> data);
+    // recorder
+    public delegate void Record(int type, string name);    // 1 - record start, 2 - record stop
 
     public partial class FormDrawing : Form
     {
@@ -26,17 +28,18 @@ namespace Metec.MVBDClient
         NotificationsMask mask;
         string ip;
 
-        protected bool fancy_switch = false;
+        protected bool fancySwitch = false;
         protected SceneData _scene;
         protected BaseSceneHandler _sceneHandler;
-        bool flashing_show;
-        public SendVoice send_voice_handler;
-        public SceneVoice scene_voice_handler;
+        bool flashingShow;
+        public SendVoice sendVoiceHandler;
+        public SceneVoice sceneVoiceHandler;
+        public Record recordHandler;
 
-        public int current_frame = 0;
-        public bool has_updated_frame = false;
-        public string file_prefix = "{0}/scene_{1}/";
-        public string exp_folder = "";
+        public int currentFrame = 1;
+        public bool hasUpdatedFrame = false;
+        public string filePrefix = "{0}/scene_{1}/";
+        public string expFolder = "";
 
         string[] scene_paths;
 
@@ -51,17 +54,18 @@ namespace Metec.MVBDClient
         public FormDrawing(string ip)
         {
             this.ip = ip;
-            this.flashing_show = true;
+            this.flashingShow = true;
             InitLog();
             InitializeComponent();
         }
 
-        public FormDrawing(string ip, SendVoice send_voice_handler, SceneVoice scene_voice_handler = null)
+        public FormDrawing(string ip, SendVoice sendVoiceHandler, SceneVoice sceneVoiceHandler = null, Record recordHandler = null)
         {
             this.ip = ip;
-            this.flashing_show = true;
-            this.send_voice_handler = send_voice_handler;
-            this.scene_voice_handler = scene_voice_handler;
+            this.flashingShow = true;
+            this.sendVoiceHandler = sendVoiceHandler;
+            this.sceneVoiceHandler = sceneVoiceHandler;
+            this.recordHandler = recordHandler;
             InitLog();
             InitializeComponent();
         }
@@ -131,7 +135,7 @@ namespace Metec.MVBDClient
                 return;
             }
             _scene.render(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY);
-            SceneData.flush(_con.VirtualDevice.Pins.Array_extra, _con.VirtualDevice.Pins.Array, _con.PinCountX, _con.PinCountY, flashing_show);
+            SceneData.flush(_con.VirtualDevice.Pins.Array_extra, _con.VirtualDevice.Pins.Array, _con.PinCountX, _con.PinCountY, flashingShow);
             _con.SendPins();
         }
 
@@ -210,11 +214,11 @@ namespace Metec.MVBDClient
             }
         }
 
-        private void send_voice(string semantic_label)
+        private void send_voice(string semantic_label, int type = 2)
         {
-            if (this.send_voice_handler != null)
+            if (this.sendVoiceHandler != null)
             {
-                this.send_voice_handler(1, semantic_label);
+                this.sendVoiceHandler(type, semantic_label);
             }
             else
             {
@@ -228,7 +232,7 @@ namespace Metec.MVBDClient
 
         private void change_scene()
         {
-            if (!fancy_switch)
+            if (!fancySwitch)
             {
                 return;
             }
@@ -246,7 +250,7 @@ namespace Metec.MVBDClient
             if (file_suffix > 0)
             {
                 ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
-                string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
 
                 UpdateJsonFile(fileName);
                 GenerateJsonFileContext(file_suffix, info.Name);
@@ -256,13 +260,13 @@ namespace Metec.MVBDClient
                 file_suffix = _scene.current_suffix / 100;
                 if (file_suffix > 0)
                 {
-                    if (file_suffix == 1 && has_updated_frame)
+                    if (file_suffix == 1 && hasUpdatedFrame)
                     {
-                        current_frame++;
-                        has_updated_frame = false;
+                        currentFrame++;
+                        hasUpdatedFrame = false;
                     }
                     send_voice(PARAMS.VOICE_BACK);
-                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                    string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
                     UpdateJsonFile(fileName);
                     GenerateJsonFileContext(file_suffix);
                 }
@@ -291,7 +295,7 @@ namespace Metec.MVBDClient
                 return;
             }
             int id = info == null ? PARAMS.BLANK_ID : info.Id;
-            if (fancy_switch)
+            if (fancySwitch)
             {
                 for (int i = 0; i < _scene._data.Count(); i++)
                 {
@@ -688,7 +692,41 @@ namespace Metec.MVBDClient
             }
             else if (e.Key == 222) // RT: rotate right
             {
-                _scene.rot_right();
+                // _scene.rot_right();
+                // render_and_flush();
+
+                // stop recording
+                var recordName = string.Format("{0}.wav", DateTime.Now);
+                if (recordHandler != null)
+                {
+                    recordHandler(2, "test.wav");
+                }
+
+                // TODO: remove, this is for test
+                if (fancySwitch)
+                {
+                    // scene note
+                    SceneNote note = new SceneNote();
+                    note.id = _scene._scene_note.Count + 10000;
+                    note.name = "";
+                    note.t = DateTime.Now;
+                    note.recordName = recordName;
+                    note.imgName = "";
+                    note.jsonFileName = GetSceneFileName();
+                    _scene._scene_note.Add(note);
+                }
+                else
+                {
+                    SceneNote note = new SceneNote();
+                    note.id = _scene._data[16].id;
+                    note.name = _scene._data[16].name;
+                    note.t = DateTime.Now;
+                    note.recordName = recordName;
+                    note.imgName = "";
+                    note.jsonFileName = GetSceneFileName();
+                    _scene._data[16].note = note;
+                }
+                SceneNote.save(GetNoteFileName(), _scene);
                 render_and_flush();
             }
             else if (e.Key == 241) // F1: mode0
@@ -696,20 +734,20 @@ namespace Metec.MVBDClient
                 //_scene.set_mode(0);
                 //render_and_flush();
                 // back to higher level
-                if (!fancy_switch)
+                if (!fancySwitch)
                 {
                     return;
                 }
                 int file_suffix = _scene.current_suffix / 100;
                 if (file_suffix > 0)
                 {
-                    if (file_suffix == 1 && has_updated_frame)
+                    if (file_suffix == 1 && hasUpdatedFrame)
                     {
-                        current_frame++;
-                        has_updated_frame = false;
+                        currentFrame++;
+                        hasUpdatedFrame = false;
                     }
                     send_voice(PARAMS.VOICE_BACK);
-                    string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                    string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
                     UpdateJsonFile(fileName);
                     GenerateJsonFileContext(file_suffix);
                 }
@@ -726,14 +764,14 @@ namespace Metec.MVBDClient
             else if (e.Key == 220)
             {
                 // change_scene();
-                // if (has_updated_frame)
+                // if (hasUpdatedFrame)
                 // {
                 //     send_voice("刷新");
-                //     current_frame ++;
-                //     has_updated_frame = false;
+                //     currentFrame ++;
+                //     hasUpdatedFrame = false;
                 // }
                 // int file_suffix = 1;
-                // string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                // string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
                 // UpdateJsonFile(fileName);
                 // _scene.current_suffix = file_suffix;
                 render_and_flush();
@@ -744,37 +782,37 @@ namespace Metec.MVBDClient
                 // int file_suffix = _scene.current_suffix / 10;
                 // if (file_suffix > 0)
                 // {
-                //     if (file_suffix == 1 && has_updated_frame)
+                //     if (file_suffix == 1 && hasUpdatedFrame)
                 //     {
-                //         current_frame++;
-                //         has_updated_frame = false;
+                //         currentFrame++;
+                //         hasUpdatedFrame = false;
                 //     }
-                //     string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                //     string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
                 //     UpdateJsonFile(fileName);
                 //     _scene.current_suffix = file_suffix;
                 // }
 
                 // refreash
                 change_scene();
-                if (has_updated_frame)
+                if (hasUpdatedFrame)
                 {
                     send_voice("刷新");
-                    current_frame++;
-                    has_updated_frame = false;
+                    currentFrame++;
+                    hasUpdatedFrame = false;
                 }
                 int file_suffix = 1;
-                string fileName = string.Format("scene_{0}_{1}.json", current_frame, file_suffix);
+                string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
                 UpdateJsonFile(fileName);
                 _scene.current_suffix = file_suffix;
             }
             else if (e.Key == 206)
             {
                 // fancy switch
-                flashing_show = true;
-                fancy_switch = !fancy_switch;
-                if (scene_voice_handler != null)
+                flashingShow = true;
+                fancySwitch = !fancySwitch;
+                if (sceneVoiceHandler != null)
                 {
-                    scene_voice_handler(_scene._data);
+                    sceneVoiceHandler(_scene._data);
                 }
             }
         }
@@ -783,6 +821,37 @@ namespace Metec.MVBDClient
         void _con_KeyUp(object sender, MVBDKeyEventArgs e)
         {
             AddToList("KeyUp:       ", e.Key);
+            if (_scene == null)
+            {
+                Console.WriteLine("Exception: " + "scene is empty, load before drawing.");
+                return;
+            }
+            /**+: 226
+               -: 227
+               U: 216
+               L: 217
+               D: 218
+               R: 219
+               X: 220
+               LT: 214
+               RT: 222
+               F1: 241
+               F2: 242
+               F3: 243
+               F4: 244
+               F5: 245
+               F6: 246
+               
+               1-8: 200-207
+            */
+            if (e.Key == 222) // RT - start recording
+            {
+                if (recordHandler != null)
+                {
+                    send_voice("开始录音");
+                    recordHandler(1, "");
+                }
+            }
         }
 
         private void btnDrawGrid_Click(object sender, EventArgs e)
@@ -1078,9 +1147,9 @@ namespace Metec.MVBDClient
 
         private void FlashRefresh(object sender, EventArgs e)
         {
-            if (_scene != null && fancy_switch)
+            if (_scene != null && fancySwitch)
             {
-                flashing_show = !flashing_show;
+                flashingShow = !flashingShow;
                 render_and_flush();
             }
         }
@@ -1107,9 +1176,9 @@ namespace Metec.MVBDClient
         public void UpdateJsonFile(string fileName)
         {
             logger.Info(string.Format("change to file: {0}", fileName));
-            txtPath.Text = string.Format(file_prefix, exp_folder, current_frame) + fileName;
+            txtPath.Text = string.Format(filePrefix, expFolder, currentFrame) + fileName;
             // for windows debug
-            if (exp_folder == "")
+            if (expFolder == "")
             {
                 txtPath.Text = fileName;
             }
@@ -1123,19 +1192,30 @@ namespace Metec.MVBDClient
             {
                 _sceneHandler = new FirstLevelHandler(_scene);
             }
+
             else if (current_object != null)
             {
                 _sceneHandler = new SecondLevelHandler(_scene, current_object);
             }
-            if (fancy_switch)
+            if (fancySwitch)
             {
                 var overview = _sceneHandler.GetOverview();
-                send_voice(overview);
+                send_voice(overview, 1);
             }
-            if (fancy_switch && scene_voice_handler != null)
+            if (fancySwitch && sceneVoiceHandler != null)
             {
-                scene_voice_handler(_scene._data);
+                sceneVoiceHandler(_scene._data);
             }
+        }
+
+        public string GetSceneFileName()
+        {
+            return string.Format("scene_{0}_{1}.json", currentFrame, _scene.current_suffix);
+        }
+
+        public string GetNoteFileName()
+        {
+            return string.Format("scene_{0}_{1}_note.json", currentFrame, _scene.current_suffix);
         }
 
         public static string GetRelativePosition(int obj_id, SceneData _scene)

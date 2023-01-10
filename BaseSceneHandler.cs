@@ -8,7 +8,7 @@ namespace Metec.MVBDClient
     public class BaseSceneHandler
     {
         public SceneData _scene;
-        public BaseSceneHandler( SceneData scene)
+        public BaseSceneHandler(SceneData scene)
         {
             this._scene = scene;
         }
