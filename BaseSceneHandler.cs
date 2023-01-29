@@ -7,20 +7,42 @@ namespace Metec.MVBDClient
 {
     public class BaseSceneHandler
     {
-        public SceneData _scene;
-        public BaseSceneHandler(SceneData scene)
+        public FormDrawing form;
+        public BaseSceneHandler(FormDrawing form)
         {
-            this._scene = scene;
+            this.form = form;
         }
 
-        public virtual string GetOverview()
-        {
-            return this._scene.overview == null ? "" : this._scene.overview;
-        }
+        public virtual void Init(bool isChangeView=false)
+        { }
 
-        public virtual string GetRemindText()
+        public virtual string GetSceneName()
         {
             return "";
         }
+
+        public virtual void DoubleClickShape(ExtraInfo info)
+        { }
+
+        public virtual void ClickShape(ExtraInfo info)
+        { }
+
+        public virtual void ClickLine(ExtraInfo info)
+        { }
+
+        public virtual void ClickLineWithSelf(ExtraInfo info)
+        { }
+
+        public virtual void SendEmptyVoice()
+        { }
+
+        public virtual void Record(ExtraInfo info)
+        { }
+
+        public virtual void Refresh()
+        { }
+
+        public virtual void Stop()
+        { }
     }
 }

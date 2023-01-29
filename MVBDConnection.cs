@@ -2439,9 +2439,11 @@ namespace Metec.MVBDClient
             return new ExtraInfo
             {
                 Id = note.id,
+                Type = 3,
                 IsVisible = true,
-                IsFlashing = false,
+                IsFlashing = note.isFlashing,
                 Note = note,
+                Name = note.name,
             };
         }
     }

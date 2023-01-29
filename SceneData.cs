@@ -37,12 +37,24 @@ namespace Metec.MVBDClient
         public const string VOICE_BACK = "返回上一层级";
         public const string VOICE_BACK_FAIL = "您已在最初画面";
 
-        public static ExtraInfo AGENT_INFO = new ExtraInfo { 
+        public static ExtraInfo AGENT_INFO = new ExtraInfo {
             Id = -1,
             IsVisible = true,
             Type = -1,
             Source = null,
             SemanticLabel = VOICE_SELF
+        };
+
+        public static List<Tuple<Type, Type>> ViewTransList = new List<Tuple<Type, Type>> {
+            // init
+            new Tuple<Type, Type>(typeof(BaseSceneHandler), typeof(GlanceHandler)),
+            new Tuple<Type, Type>(typeof(BaseSceneHandler), typeof(FixationLevel1Handler)),
+
+            // fixation
+            new Tuple<Type, Type>(typeof(FixationLevel1Handler), typeof(GlanceHandler)),
+
+            // glance
+            new Tuple<Type, Type>(typeof(GlanceHandler), typeof(FixationLevel1Handler)),
         };
     }
 
@@ -86,6 +98,7 @@ namespace Metec.MVBDClient
         public string jsonFileName;   // layout name
         public string imgName;        // img name
         public string recordName;     // recording voice name
+        public bool isFlashing;       // flashing
 
         public static bool save(string path, SceneData _scene)
         {

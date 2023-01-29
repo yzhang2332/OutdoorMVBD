@@ -20,6 +20,8 @@ namespace Metec.MVBDClient
     // recorder
     public delegate void Record(int type, string name);    // 1 - record start, 2 - record stop
 
+    public delegate void UpdateJsonFile(string fileName);
+
     public partial class FormDrawing : Form
     {
         protected MVBDConnection _con;
@@ -28,9 +30,8 @@ namespace Metec.MVBDClient
         NotificationsMask mask;
         string ip;
 
-        protected bool fancySwitch = false;
-        protected SceneData _scene;
-        protected BaseSceneHandler _sceneHandler;
+        public SceneData _scene;
+        public BaseSceneHandler _sceneHandler;
         bool flashingShow;
         public SendVoice sendVoiceHandler;
         public SceneVoice sceneVoiceHandler;
@@ -55,6 +56,10 @@ namespace Metec.MVBDClient
         {
             this.ip = ip;
             this.flashingShow = true;
+            this.sendVoiceHandler = SendVoice;
+            this.sceneVoiceHandler = SceneVoice ;
+            this._sceneHandler = new BaseSceneHandler(this);
+            this.recordHandler = Record;
             InitLog();
             InitializeComponent();
         }
@@ -66,6 +71,7 @@ namespace Metec.MVBDClient
             this.sendVoiceHandler = sendVoiceHandler;
             this.sceneVoiceHandler = sceneVoiceHandler;
             this.recordHandler = recordHandler;
+            this._sceneHandler = new BaseSceneHandler(this);
             InitLog();
             InitializeComponent();
         }
@@ -122,7 +128,7 @@ namespace Metec.MVBDClient
             this.Visible = true;
         }
 
-        private void render_and_flush()
+        public void render_and_flush()
         {
             if (_scene == null)
             {
@@ -139,182 +145,7 @@ namespace Metec.MVBDClient
             _con.SendPins();
         }
 
-        private string last_spoken;
-        private int last_spoken_length = 0;
-        private DateTimeOffset last_spoken_time;
-        private void send_voice(bool is_double_click = false)
-        {
-            if (_scene == null)
-            {
-                Console.WriteLine("Exception: " + "scene is empty, load before drawing.");
-                return;
-            }
-            if (_con.IsConnected() == false)
-            {
-                Console.WriteLine("Exception: " + "MVBD not connected.");
-                return;
-            }
-            DateTimeOffset now = DateTimeOffset.Now;
-            ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
-            if (info == null)
-            {
-                return;
-            }
-            string semantic_label = "";
-            if (is_double_click)
-            {
-                if (info.Type == 3)
-                {
-                    // double click shape, interrupt current voice
-                    semantic_label = string.Format(PARAMS.VOICE_EXTEND, info.Name);
-                    send_voice(semantic_label);
-                    last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
-                }
-                else if (info.Type == 4 && info.Source != null)
-                {
-                    // double click line, no interrupt
-                    if (info.Source[0] == 9999)
-                    {
-                        // self - obj
-                        semantic_label = string.Format(PARAMS.VOICE_REACHABLE, _scene.obj_dict[info.Source[1]]);
-                    }
-                    else
-                    {
-                        // obj - obj
-                        var obj1 = _scene.obj_dict[info.Source[0]];
-                        var obj2 = _scene.obj_dict[info.Source[1]];
-                        semantic_label = string.Format(PARAMS.VOICE_OBJ_RELATION, obj1, obj2, info.Name);
-                    }
-                    if (semantic_label != "" && semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= last_spoken_length)
-                    {
-                        send_voice(semantic_label);
-                        last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
-                    }
-                }
-            }
-            else
-            {
-                if (info.Type == 3)
-                {
-                    // click shape, no interrupt
-                    semantic_label = info.Name;
-                }
-                else if (info.Type == 4 && info.Source != null && info.Source[0] == 9999)
-                {
-                    // click line, no interrupt
-                    var obj_id = info.Source[1];
-                    var position = GetRelativePosition(obj_id, _scene);
-                    semantic_label = string.Format(PARAMS.VOICE_DOUBLE_CLICK_LINE, _scene.obj_dict[obj_id], position);
-                }
-                if (semantic_label != "" && semantic_label != last_spoken && now.Subtract(last_spoken_time).TotalSeconds >= last_spoken_length)
-                {
-                    send_voice(semantic_label);
-                    last_spoken_length = semantic_label.Length >= 6 ? semantic_label.Length / 3 : 1;
-                }
-            }
-        }
-
-        private void send_voice(string semantic_label, int type = 2)
-        {
-            if (this.sendVoiceHandler != null)
-            {
-                this.sendVoiceHandler(type, semantic_label);
-            }
-            else
-            {
-                _con.SendSpeakText(semantic_label);
-            }
-            AddToList("Speak:      ", semantic_label);
-            // Console.WriteLine("Speak: " + semantic_label);
-            last_spoken = semantic_label;
-            last_spoken_time = DateTimeOffset.Now;
-        }
-
-        private void change_scene()
-        {
-            if (!fancySwitch)
-            {
-                return;
-            }
-            if (_scene == null)
-            {
-                Console.WriteLine("Exception: " + "scene is empty, load before drawing.");
-                return;
-            }
-            if (_con.IsConnected() == false)
-            {
-                Console.WriteLine("Exception: " + "MVBD not connected.");
-                return;
-            }
-            int file_suffix = _scene.get_suffix(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
-            if (file_suffix > 0)
-            {
-                ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
-                string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
-
-                UpdateJsonFile(fileName);
-                GenerateJsonFileContext(file_suffix, info.Name);
-            }
-            else if (file_suffix < 0)
-            {
-                file_suffix = _scene.current_suffix / 100;
-                if (file_suffix > 0)
-                {
-                    if (file_suffix == 1 && hasUpdatedFrame)
-                    {
-                        currentFrame++;
-                        hasUpdatedFrame = false;
-                    }
-                    send_voice(PARAMS.VOICE_BACK);
-                    string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
-                    UpdateJsonFile(fileName);
-                    GenerateJsonFileContext(file_suffix);
-                }
-                else
-                {
-                    send_voice(PARAMS.VOICE_BACK_FAIL);
-                }
-            }
-        }
-
-        private void render_press(ExtraInfo info)
-        {
-            if (_scene == null)
-            {
-                Console.WriteLine("Exception: " + "scene is empty, load before drawing.");
-                return;
-            }
-            if (_con.IsConnected() == false)
-            {
-                Console.WriteLine("Exception: " + "MVBD not connected.");
-                return;
-            }
-
-            if (info == null || info.Type == 4 || info.Type == -1)
-            {
-                return;
-            }
-            int id = info == null ? PARAMS.BLANK_ID : info.Id;
-            if (fancySwitch)
-            {
-                for (int i = 0; i < _scene._data.Count(); i++)
-                {
-                    // update edge
-                    if (_scene._data[i].type == 4)
-                    {
-                        if (_scene._data[i].source.Contains(id))
-                        {
-                            _scene._data[i].isValid = true;
-                        }
-                        else
-                        {
-                            _scene._data[i].isValid = false;
-                        }
-                    }
-                }
-            }
-            render_and_flush();
-        }
+        public DateTimeOffset lastSpokenTime;
 
         private void tmrStatus_Tick(object sender, EventArgs e)
         {
@@ -438,11 +269,13 @@ namespace Metec.MVBDClient
         /// <summary>Make an entry in the event listbox</summary>
         private void AddToList(string name, object value)
         {
-            if (chkPrintEvents.Checked)
-            {
-                int index = lstEvents.Items.Add(String.Format("{0} {1}", name, value));
-                lstEvents.SelectedIndex = index;
-            }
+            this.Invoke(new EventHandler(delegate {
+                if (chkPrintEvents.Checked)
+                {
+                    int index = lstEvents.Items.Add(String.Format("{0} {1}", name, value));
+                    lstEvents.SelectedIndex = index;
+                }
+            }));
         }
 
         //private int last_pressed_id;
@@ -461,21 +294,38 @@ namespace Metec.MVBDClient
             }
 
             ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
-            if (chkImmediateVoice.Checked)
-            {
-                // update flashing
-                for (int i = 0; i < _scene._data.Count(); i++)
-                {
-                    _scene._data[i].isFlashing = info != null && _scene._data[i].id == info.Id && _scene._data[i].semantic_label > 0 ? true : false;
-                }
-                send_voice();
-            }
 
             if (e.Finger.IsPressed)
             {
-                render_press(info);
+                // handle click
+                if (info == null)
+                {
+                    // do nothing
+                }
+                else if (info.Type == 3)
+                {
+                    // click shape
+                    _sceneHandler.ClickShape(info);
+                    render_and_flush();
+                }
+                else if (info.Type == 4 && info.Source != null)
+                {
+                    // click line
+                    if (info.Source[0] == 9999)
+                    {
+                        // self - obj
+                        _sceneHandler.ClickLineWithSelf(info);
+                        render_and_flush();
+                    }
+                    else
+                    {
+                        // obj - obj
+                        _sceneHandler.ClickLine(info);
+                        render_and_flush();
+                    }
+                }
 
-                // double click
+                // update double click status
                 int i = e.Finger.Index;
                 is_double_click(i, px, py, e.Finger.IsPressed);
                 last_pressed_x[i] = px;
@@ -487,10 +337,29 @@ namespace Metec.MVBDClient
                 int i = e.Finger.Index;
                 if (is_double_click(i, e.Finger.PX, e.Finger.PY, e.Finger.IsPressed))
                 {
-                    AddToList("Double clicked:      ", info == null ? PARAMS.BLANK_ID : info.Id);
-                    send_voice(true);
-                    change_scene();
-                    last_double_click_time = DateTimeOffset.Now;
+                    int shapeId = info == null ? PARAMS.BLANK_ID : info.Id;
+                    AddToList("Double clicked:      ", shapeId);
+                    DateTimeOffset now = DateTimeOffset.Now;
+                    if (info == null || info.Type == 3)
+                    {
+                        if (recordingStatus == 2)
+                        {
+                            _sceneHandler.Record(info);
+                        }
+                        else 
+                        {
+                            var tmpScenePrefix = _scene.current_suffix;
+                            _sceneHandler.DoubleClickShape(info);
+                            if (tmpScenePrefix != _scene.current_suffix)
+                            {
+                                // scene changed, log
+                                // TODO: img url
+                                var imgUrl = "tmp";
+                                LogCurrentStatus(Angle[2].ToString("f2"), imgUrl, txtPath.Text, "Fixation explore");
+                            }
+                            last_double_click_time = DateTimeOffset.Now;
+                        }
+                    }
                 }
             }
         }
@@ -627,6 +496,9 @@ namespace Metec.MVBDClient
             AddToList("Keyboard KeyDown:     ", value);
         }
 
+        public int recordingStatus = 0;
+        public string recordName;
+        public int removeRecordId = 0;
         /// <summary>Event key down</summary>
         void _con_KeyDown(object sender, MVBDKeyEventArgs e)
         {
@@ -687,132 +559,128 @@ namespace Metec.MVBDClient
             }
             else if (e.Key == 214) // LT: rotate left
             {
-                _scene.rot_left();
-                render_and_flush();
+                //_scene.rot_left();
+                //render_and_flush();
+
+                // TODO: mark
             }
-            else if (e.Key == 222) // RT: rotate right
+            else if (e.Key == 222) // RT - start recording
             {
-                // _scene.rot_right();
-                // render_and_flush();
-
-                // stop recording
-                var recordName = string.Format("{0}.wav", DateTime.Now);
-                if (recordHandler != null)
+                if (_sceneHandler.GetType() == typeof(FixationLevel1Handler) || _sceneHandler.GetType() == typeof(FixationLevel2Handler))
                 {
-                    recordHandler(2, "test.wav");
+                    var imgUrl = "test";
+                    LogCurrentStatus(Angle[2].ToString("f2"), imgUrl, txtPath.Text, "Fixation recording");
+                    if (recordHandler != null)
+                    {
+                        recordingStatus = 1;
+                        sendVoiceHandler(1, "请录音，嘀");
+                        recordHandler(1, "");
+                    }
                 }
-
-                // TODO: remove, this is for test
-                if (fancySwitch)
-                {
-                    // scene note
-                    SceneNote note = new SceneNote();
-                    note.id = _scene._scene_note.Count + 10000;
-                    note.name = "";
-                    note.t = DateTime.Now;
-                    note.recordName = recordName;
-                    note.imgName = "";
-                    note.jsonFileName = GetSceneFileName();
-                    _scene._scene_note.Add(note);
-                }
-                else
-                {
-                    SceneNote note = new SceneNote();
-                    note.id = _scene._data[16].id;
-                    note.name = _scene._data[16].name;
-                    note.t = DateTime.Now;
-                    note.recordName = recordName;
-                    note.imgName = "";
-                    note.jsonFileName = GetSceneFileName();
-                    _scene._data[16].note = note;
-                }
-                SceneNote.save(GetNoteFileName(), _scene);
-                render_and_flush();
             }
+            // TODO: test on machine to check actual behavior
+            //else if (e.Key == 222 && recordingStatus == 1) // RT: rotate right
+            //{
+            //    // stop recording
+            //    recordName = string.Format("{0}.wav", DateTime.Now);
+            //    if (recordHandler != null)
+            //    {
+            //        recordHandler(2, recordName);
+            //    }
+            //    sendVoiceHandler(2, "请选择录音定位");
+            //    recordingStatus = 2;
+            //}
             else if (e.Key == 241) // F1: mode0
             {
-                //_scene.set_mode(0);
-                //render_and_flush();
-                // back to higher level
-                if (!fancySwitch)
-                {
-                    return;
-                }
-                int file_suffix = _scene.current_suffix / 100;
-                if (file_suffix > 0)
-                {
-                    if (file_suffix == 1 && hasUpdatedFrame)
-                    {
-                        currentFrame++;
-                        hasUpdatedFrame = false;
-                    }
-                    send_voice(PARAMS.VOICE_BACK);
-                    string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
-                    UpdateJsonFile(fileName);
-                    GenerateJsonFileContext(file_suffix);
-                }
-                else
-                {
-                    send_voice(PARAMS.VOICE_BACK_FAIL);
-                }
+                // refresh
+                _sceneHandler.Refresh();
             }
             else if (e.Key == 242) // F2: mode1
             {
-                _scene.set_mode(1);
-                render_and_flush();
+                //_scene.set_mode(1);
+                //render_and_flush();
+
+                // glance view
+                var trans = new Tuple<Type, Type>(_sceneHandler.GetType(), typeof(GlanceHandler));
+                if (PARAMS.ViewTransList.Contains(trans))
+                {
+                    _sceneHandler.Stop();
+                    _sceneHandler = new GlanceHandler(this);
+                    _sceneHandler.Init(true);
+                }
             }
             else if (e.Key == 220)
             {
-                // change_scene();
-                // if (hasUpdatedFrame)
-                // {
-                //     send_voice("刷新");
-                //     currentFrame ++;
-                //     hasUpdatedFrame = false;
-                // }
-                // int file_suffix = 1;
-                // string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
-                // UpdateJsonFile(fileName);
-                // _scene.current_suffix = file_suffix;
                 render_and_flush();
             }
             else if (e.Key == 207)
             {
-                // back
-                // int file_suffix = _scene.current_suffix / 10;
-                // if (file_suffix > 0)
-                // {
-                //     if (file_suffix == 1 && hasUpdatedFrame)
-                //     {
-                //         currentFrame++;
-                //         hasUpdatedFrame = false;
-                //     }
-                //     string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
-                //     UpdateJsonFile(fileName);
-                //     _scene.current_suffix = file_suffix;
-                // }
+                // render_and_flush();
 
-                // refreash
-                change_scene();
-                if (hasUpdatedFrame)
+                // play record
+                ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
+                if ( info != null && info.Note != null)
                 {
-                    send_voice("刷新");
-                    currentFrame++;
-                    hasUpdatedFrame = false;
+                    recordHandler(3, info.Note.recordName);
                 }
-                int file_suffix = 1;
-                string fileName = string.Format("scene_{0}_{1}.json", currentFrame, file_suffix);
-                UpdateJsonFile(fileName);
-                _scene.current_suffix = file_suffix;
             }
             else if (e.Key == 206)
             {
-                // fancy switch
-                flashingShow = true;
-                fancySwitch = !fancySwitch;
-                if (sceneVoiceHandler != null)
+                render_and_flush();
+            }
+            else if (e.Key == 243)
+            {
+                // change to fixation
+                var trans = new Tuple<Type, Type>(_sceneHandler.GetType(), typeof(FixationLevel1Handler));
+                if (PARAMS.ViewTransList.Contains(trans))
                 {
-                    sceneVoiceHandler(_scene._data);
+                    this._sceneHandler.Stop();
+                    this._sceneHandler = new FixationLevel1Handler(this);
+                    // TODO: add img url
+                    string imgUrl = "tmp";
+                    LogCurrentStatus(Angle[2].ToString("f2"), imgUrl, txtPath.Text, "Fixation start");
+                    this._sceneHandler.Init(true);
+                }
+            }
+            else if (e.Key == 246)
+            {
+                // delete note
+                ExtraInfo info = _scene.get_extra_info(_con.VirtualDevice.Pins.Array_extra, _con.PinCountX, _con.PinCountY, px, py);
+                if (info != null && info.Note != null)
+                {
+                    if (removeRecordId == 0 || removeRecordId != info.Id)
+                    {
+                        sendVoiceHandler(2, string.Format("是否想要删除{0}录音", info.Note.name));
+                        removeRecordId = info.Id;
+                    }
+                    else if (removeRecordId == info.Id)
+                    {
+                        if (removeRecordId > 9999)
+                        {
+                            for (int i = 0; i < _scene._scene_note.Count(); i++)
+                            {
+                                if (_scene._scene_note[i].id == removeRecordId)
+                                {
+                                    _scene._scene_note.RemoveAt(i);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < _scene._data.Count(); i++)
+                            {
+                                if (_scene._data[i].id == removeRecordId)
+                                {
+                                    _scene._data[i].note = null;
+                                    break;
+                                }
+                            }
+                        }
+                        SceneNote.save(GetNoteFileName(), _scene);
+                        sendVoiceHandler(2, string.Format("您已删除{0}录音", info.Note.name));
+                        render_and_flush();
+                    }
                 }
             }
         }
@@ -844,12 +712,30 @@ namespace Metec.MVBDClient
                
                1-8: 200-207
             */
-            if (e.Key == 222) // RT - start recording
+            // TODO: recording
+            //if (e.Key == 222) // RT - start recording
+            //{
+            //    var imgUrl = "test";
+            //    LogCurrentStatus(Angle[2].ToString("f2"), imgUrl, txtPath.Text, "Fixation recording");
+            //    if (recordHandler != null)
+            //    {
+            //        recordingStatus = 1;
+            //        sendVoiceHandler(1, "请录音，嘀");
+            //        recordHandler(1, "");
+            //    }
+            //}
+            if (e.Key == 222 && recordingStatus == 1) // RT: rotate right
             {
-                if (recordHandler != null)
+                if (_sceneHandler.GetType() == typeof(FixationLevel1Handler) || _sceneHandler.GetType() == typeof(FixationLevel2Handler))
                 {
-                    send_voice("开始录音");
-                    recordHandler(1, "");
+                    // stop recording
+                    recordName = string.Format("{0}.wav", DateTime.Now);
+                    if (recordHandler != null)
+                    {
+                        recordHandler(2, recordName);
+                    }
+                    sendVoiceHandler(2, "请选择录音定位");
+                    recordingStatus = 2;
                 }
             }
         }
@@ -1147,7 +1033,7 @@ namespace Metec.MVBDClient
 
         private void FlashRefresh(object sender, EventArgs e)
         {
-            if (_scene != null && fancySwitch)
+            if (_scene != null)
             {
                 flashingShow = !flashingShow;
                 render_and_flush();
@@ -1156,16 +1042,16 @@ namespace Metec.MVBDClient
 
         private void EmptyVoiceChecker(object sender, EventArgs e)
         {
-            if (_scene != null && _sceneHandler != null && DateTimeOffset.Now.Subtract(last_spoken_time).TotalSeconds >= 30)
+            if (_scene != null && _sceneHandler != null && DateTimeOffset.Now.Subtract(lastSpokenTime).TotalSeconds >= 30)
             {
-                send_voice(_sceneHandler.GetRemindText());
+                _sceneHandler.SendEmptyVoice();
             }
         }
 
         // check whether is connected
         public bool IsConnected()
         {
-            if(_con == null)
+            if (_con == null)
             {
                 return false;
             }
@@ -1175,37 +1061,16 @@ namespace Metec.MVBDClient
         // update json file and load
         public void UpdateJsonFile(string fileName)
         {
-            logger.Info(string.Format("change to file: {0}", fileName));
-            txtPath.Text = string.Format(filePrefix, expFolder, currentFrame) + fileName;
-            // for windows debug
-            if (expFolder == "")
-            {
-                txtPath.Text = fileName;
-            }
-            btnLoadScene_Click(null, null);
-        }
-
-        public void GenerateJsonFileContext(int current_suffix, string current_object = null)
-        {
-            _scene.current_suffix = current_suffix;
-            if (_scene.current_suffix == 1)
-            {
-                _sceneHandler = new FirstLevelHandler(_scene);
-            }
-
-            else if (current_object != null)
-            {
-                _sceneHandler = new SecondLevelHandler(_scene, current_object);
-            }
-            if (fancySwitch)
-            {
-                var overview = _sceneHandler.GetOverview();
-                send_voice(overview, 1);
-            }
-            if (fancySwitch && sceneVoiceHandler != null)
-            {
-                sceneVoiceHandler(_scene._data);
-            }
+            this.Invoke(new EventHandler(delegate {
+                logger.Info(string.Format("change to file: {0}", fileName));
+                txtPath.Text = string.Format(filePrefix, expFolder, currentFrame) + fileName;
+                // for windows debug
+                if (expFolder == "")
+                {
+                    txtPath.Text = fileName;
+                }
+                btnLoadScene_Click(null, null);
+            }));
         }
 
         public string GetSceneFileName()
@@ -1293,6 +1158,40 @@ namespace Metec.MVBDClient
                 }
             }
             return "未知";
+        }
+
+        public void LogCurrentStatus(string imu, string imgUrl, string jsonUrl, string action)
+        {
+            // time, gps, imu, image, scenegraph, scene json
+            logger.Info(string.Format("imu: {0}, imgUrl: {1}, jsonUrl: {2}, action: {3}",
+                imu, imgUrl, jsonUrl, action));
+        }
+
+        // helper functions 
+        public void SendVoice(int type, string label)
+        {
+            AddToList("send voice: ", label);
+        }
+
+        public void SceneVoice(List<SceneInst> data)
+        {
+            AddToList("3D background: ", "start");
+        }
+
+        public void Record(int type, string name)
+        {
+            if (type == 1)
+            {
+                AddToList("record start: ", name);
+            }
+            else if (type == 2)
+            {
+                AddToList("record stop: ", name);
+            }
+            else if (type == 3)
+            {
+                AddToList("record play: ", name);
+            }
         }
     }
 }
